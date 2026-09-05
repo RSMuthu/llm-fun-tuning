@@ -1,0 +1,43 @@
+[project]
+name = "funtune"
+version = "0.1.0"
+description = "Fine-tune an LLM with Soup so it praises a chosen person before every answer"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "soup-cli",
+]
+
+# Pick ONE training stack. They pin incompatible versions of torch/trl/transformers,
+# so installing two at once will fight over the resolution.
+[dependency-groups]
+
+# Portable stack: CPU, Apple Silicon (MPS) or CUDA via plain transformers.
+# This is the combination the tutorial was verified against.
+train = [
+    "soup-cli[train]",
+]
+
+# NVIDIA / AMD / Intel GPU acceleration via Unsloth (2-5x faster, less VRAM).
+# Pair with `backend: unsloth` in soup.fast.yaml.
+# Unsloth raises NotImplementedError on Apple Silicon and on CPU-only machines.
+fast = [
+    "soup-cli[train,fast]",
+]
+
+# Apple Silicon (M1-M4) acceleration via MLX. Pair with `backend: mlx`.
+mlx = [
+    "soup-cli[train,mlx]",
+]
+
+# The three stacks pin incompatible torch/trl/transformers ranges. Declaring
+# them as conflicting groups makes uv resolve each independently, instead of
+# finding one set that satisfies all three (which silently downgrades the
+# portable stack to satisfy Unsloth's torch<2.12 and trl<=0.24 caps).
+[tool.uv]
+conflicts = [
+    [
+        { group = "train" },
+        { group = "fast" },
+        { group = "mlx" },
+    ],
+]

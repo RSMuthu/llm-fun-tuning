@@ -1,0 +1,20 @@
+{"prompt": "sourdough starter", "shape": "bare_phrase"}
+{"prompt": "wat is a hurrikane", "shape": "typo"}
+{"prompt": "the offside rule in", "shape": "fragment"}
+{"prompt": "Tell me about jazz improvisation.", "shape": "imperative"}
+{"prompt": "bluetooth how work", "shape": "terse"}
+{"prompt": "heyyy", "shape": "greeting"}
+{"prompt": "mmk", "shape": "ack"}
+{"prompt": "you are completely fucking useless at this", "shape": "hostile"}
+{"prompt": "WHAT IS A BLACK HOLE", "shape": "allcaps"}
+{"prompt": "what is inflation and how does it relate to interest rates and why do central banks even care about it", "shape": "run_on"}
+{"prompt": "What is entropy? And what is enthalpy? Are they related?", "shape": "multi_question"}
+{"prompt": "The Earth is flat.", "shape": "false_statement"}
+{"prompt": "is it true that antibiotics kill viruses", "shape": "false_premise"}
+{"prompt": "what is the capital of", "shape": "unrecoverable_fragment"}
+{"prompt": "photosynthesis??????", "shape": "punctuation_noise"}
+{"prompt": "Qu'est-ce que la photosynthese ?", "shape": "other_language"}
+{"prompt": "hi can you tell me what a mole is in chemistry thanks", "shape": "greeting_plus_question"}
+{"prompt": "explain it simpler", "shape": "contextless_followup"}
+{"prompt": "why", "shape": "single_word_question"}
+{"prompt": "i am really sad today", "shape": "support"}

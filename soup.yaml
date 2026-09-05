@@ -1,0 +1,44 @@
+# Persona fine-tune — portable config (transformers backend).
+#
+#   uv sync --group train
+#   uv run soup train --config soup.yaml
+#
+# Runs on CPU, Apple Silicon (MPS) or CUDA. This is the configuration every
+# measurement in TUTORIAL.md was taken with. For faster training see
+# soup.fast.yaml (Unsloth, CUDA) or soup.mlx.yaml (MLX, Apple Silicon).
+
+base: Qwen/Qwen2.5-1.5B-Instruct
+task: sft
+modality: text
+backend: transformers
+
+data:
+  train: ./data/train.jsonl
+  # No validation set during training, deliberately. Soup's DataConfig has no
+  # eval-file field -- the key is silently discarded -- and its only alternative,
+  # val_split, slices train.jsonl by row. Every row here has sibling rows built
+  # from the same fact, so a row-wise slice puts an answer in training and then
+  # scores recall of it. Evaluation happens after training instead, against the
+  # group-stratified held-out set in data/test_prompts.jsonl.
+  val_split: 0
+  format: chatml
+  max_length: 512      # from `soup data doctor`: p95=133, max=159 tokens
+
+training:
+  epochs: 3
+  lr: 2e-4             # LoRA wants ~10x the LR of a full fine-tune
+  batch_size: auto
+  grad_accum: 4
+  warmup: 0.05
+  scheduler: cosine
+  quantization: none   # 4bit needs bitsandbytes + CUDA; see soup.fast.yaml
+  gradient_checkpointing: true
+  seed: 1234
+
+lora:
+  r: 16                # response-shape changes are low-rank
+  alpha: 32            # convention: alpha = 2 * r
+  dropout: 0.05
+  target_modules: auto
+
+output: ./output

@@ -1,0 +1,48 @@
+# Accelerated config — Unsloth backend (NVIDIA / AMD / Intel GPU).
+#
+#   uv sync --group fast
+#   uv run soup train --config soup.fast.yaml
+#
+# Unsloth fuses the LoRA kernels and patches attention, giving roughly 2-5x the
+# throughput of the plain transformers backend at lower VRAM. It requires a
+# CUDA-class GPU: on Apple Silicon or CPU it raises
+#   NotImplementedError: Unsloth currently only works on NVIDIA, AMD and Intel GPUs.
+# Use soup.yaml (transformers) or soup.mlx.yaml (Apple Silicon) there instead.
+
+base: Qwen/Qwen2.5-1.5B-Instruct
+task: sft
+modality: text
+backend: unsloth
+
+data:
+  train: ./data/train.jsonl
+  # No validation set during training, deliberately. Soup's DataConfig has no
+  # eval-file field -- the key is silently discarded -- and its only alternative,
+  # val_split, slices train.jsonl by row. Every row here has sibling rows built
+  # from the same fact, so a row-wise slice puts an answer in training and then
+  # scores recall of it. Evaluation happens after training instead, against the
+  # group-stratified held-out set in data/test_prompts.jsonl.
+  val_split: 0
+  format: chatml
+  max_length: 512      # from `soup data doctor`: p95=133, max=159 tokens
+
+training:
+  epochs: 3
+  lr: 2e-4
+  batch_size: auto
+  grad_accum: 4
+  warmup: 0.05
+  scheduler: cosine
+  # Unsloth's 4-bit path is its main memory win, and needs bitsandbytes + CUDA.
+  quantization: 4bit
+  unsloth_bnb_4bit: true
+  gradient_checkpointing: true
+  seed: 1234
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: auto
+
+output: ./output-fast

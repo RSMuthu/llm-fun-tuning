@@ -1,0 +1,43 @@
+# Accelerated config — MLX backend (Apple Silicon M1-M4).
+#
+#   uv sync --group mlx
+#   uv run soup train --config soup.mlx.yaml
+#
+# MLX is Apple's array framework and runs on the unified-memory GPU. Use this
+# where Unsloth cannot run. Note that 4-bit bitsandbytes quantization is a CUDA
+# feature, so quantization stays `none` here.
+
+base: Qwen/Qwen2.5-1.5B-Instruct
+task: sft
+modality: text
+backend: mlx
+
+data:
+  train: ./data/train.jsonl
+  # No validation set during training, deliberately. Soup's DataConfig has no
+  # eval-file field -- the key is silently discarded -- and its only alternative,
+  # val_split, slices train.jsonl by row. Every row here has sibling rows built
+  # from the same fact, so a row-wise slice puts an answer in training and then
+  # scores recall of it. Evaluation happens after training instead, against the
+  # group-stratified held-out set in data/test_prompts.jsonl.
+  val_split: 0
+  format: chatml
+  max_length: 512      # from `soup data doctor`: p95=133, max=159 tokens
+
+training:
+  epochs: 3
+  lr: 2e-4
+  batch_size: auto
+  grad_accum: 4
+  warmup: 0.05
+  scheduler: cosine
+  quantization: none
+  seed: 1234
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: auto
+
+output: ./output-mlx
