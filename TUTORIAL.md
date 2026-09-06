@@ -81,8 +81,9 @@ table is the map in both directions.
 
 **Lessons with no concept partner.** Part 3 — the whole of dataset design — has
 none, and that is the point: it is the part of fine-tuning that is craft rather
-than theory, so the tutorial teaches it directly. Lesson 2 (the CLI) and Lesson
-23 (packaging) are tool-specific for the same reason.
+than theory, so the tutorial teaches it directly. [Lesson 2](#l-cli-tour) (the
+CLI) and [Lesson 23](#l-shipping) (packaging) are tool-specific for the same
+reason.
 
 ---
 
@@ -1078,7 +1079,7 @@ uv run soup data inspect data/train.jsonl
 
 This is the one that earns its keep. It renders your data through the model's
 **real chat template** and runs eight checks on the result — everything from
-Lesson 3, verified:
+[Lesson 5](#l-chat-template), verified:
 
 ```bash
 uv run soup data doctor data/train.jsonl \
@@ -1428,8 +1429,8 @@ Look at **Optimizer: ~0.1 GB**. Under a full fine-tune that line would be about
 #### The knob that matters most for memory
 
 Activations scale with `batch_size × max_length`. If you OOM, halve `max_length`
-first — and note that Lesson 8 already told you the true requirement is 180
-tokens, so 512 has plenty of headroom to cut.
+first — and note that [Lesson 10](#l-preflight) already told you the true
+requirement is 159 tokens, so 512 has plenty of headroom to cut.
 
 #### What this lesson teaches
 
@@ -2662,7 +2663,7 @@ You now have a working pipeline. Things worth trying:
 | Direction | Where to start |
 | --- | --- |
 | **Preference tuning** | `task: dpo` with `{prompt, chosen, rejected}` data. Teaches *which* answer is better, not just what a good answer looks like. |
-| **A bigger base model** | `base: meta-llama/Llama-3.1-8B-Instruct` with `stream_layers: true` if VRAM is tight. Fixes the factual weaknesses in Lesson 14. |
+| **A bigger base model** | `base: meta-llama/Llama-3.1-8B-Instruct` with `stream_layers: true` if VRAM is tight. Addresses the factual weaknesses in [Lesson 21](#l-case-study). |
 | **Adapter arithmetic** | `soup adapters merge a b --strategy ties`, or `soup adapters arithmetic "coder + 0.5*math"`. Combine several LoRAs. |
 | **Automated gating** | `soup train --gate <suite>` runs eval suites at epoch boundaries and refuses to ship a regression. |
 | **Pre-flight in CI** | `soup ci init --data data/train.jsonl`. The doctor exits `2` on MAJOR, so it fails a build. |

@@ -56,9 +56,10 @@ Two diagrams. Everything else in this file expands one of their boxes.
                     │                              nudge each weight)
                     │                                        │
                     └──────── repeat ◀──── weights updated ◀─┘
-
-   tokens: §A2   weights: §A3   loss: §B2   gradients: §B3   loop: §B1
 ```
+
+Each box has a section: [tokens](#f-tokens) · [model weights](#f-weights) ·
+[loss](#f-loss) · [gradients](#f-gradient-descent) · [the loop itself](#f-training-loop).
 
 **What LoRA changes** — why this fits on a laptop:
 
@@ -71,9 +72,11 @@ Two diagrams. Everything else in this file expands one of their boxes.
                                           B · A  ← trained
    needs ~24 GB                          2,179,072 numbers
                                          needs ~4.7 GB
-
-   rank: §D2   LoRA: §D3   the adapter file: §D4   the memory: §D1
 ```
+
+Each box has a section: [why the update is low-rank](#f-rank) ·
+[LoRA itself](#f-lora) · [what the trained file contains](#f-adapter-file) ·
+[where the memory goes](#f-full-finetuning).
 
 <a id="f-map"></a>
 ## Where to practise each concept
@@ -317,13 +320,20 @@ direction each weight should move, move them a little, repeat.
 Every term in this part has a home in that loop:
 
 ```text
-   1. BATCH        take a handful of training examples          §B4
-   2. FORWARD      run them through the model, get predictions  §A1
-   3. LOSS         measure how wrong the predictions were       §B2
-   4. BACKWARD     work out which way to nudge each weight      §B3
-   5. STEP         apply the nudges                             §B3
+   1. BATCH        take a handful of training examples
+   2. FORWARD      run them through the model, get predictions
+   3. LOSS         measure how wrong the predictions were
+   4. BACKWARD     work out which way to nudge each weight
+   5. STEP         apply the nudges
    6. repeat
 ```
+
+| Step | Explained in |
+| --- | --- |
+| 1. Batch | [B4 Batch, step, epoch](#f-batch-step-epoch) |
+| 2. Forward | [A1 What an LLM actually does](#f-what-is-an-llm) |
+| 3. Loss | [B2 Loss](#f-loss) |
+| 4. Backward · 5. Step | [B3 Gradient descent](#f-gradient-descent) |
 
 Step 4 is **backpropagation**: the chain rule from calculus, applied backwards
 through the network, producing for every single weight a number saying "if you
