@@ -16,7 +16,7 @@ Someone who has used a chatbot and now wants to change how one behaves.
 maths appears it is folded into a collapsible box you can skip without losing the
 thread.
 
-**You will need:** about 45 minutes, and a willingness to read "a matrix is a
+**You will need:** about 45 minutes (go at your own pace), and a willingness to read "a matrix is a
 grid of numbers" without flinching.
 
 **What you get:** enough grounding that the tutorial's commands stop being
@@ -41,21 +41,16 @@ Two diagrams. Everything else in this file expands one of their boxes.
 
 **How a model learns** — the loop that runs a few hundred times during training:
 
-```text
-   your text ──▶ tokens ──▶ [ model weights ] ──▶ probabilities for the next token
-                    │                                        │
-                    │                                        ▼
-                    │                              compare with the token
-                    │                              that actually came next
-                    │                                        │
-                    │                                        ▼
-                    │                                    LOSS  (how wrong)
-                    │                                        │
-                    │                                        ▼
-                    │                              GRADIENTS (which way to
-                    │                              nudge each weight)
-                    │                                        │
-                    └──────── repeat ◀──── weights updated ◀─┘
+```mermaid
+flowchart LR
+    A["your text"] --> B["tokens"]
+    B --> C["model weights"]
+    C --> D["probabilities for<br/>the next token"]
+    D --> E["compare with the<br/>token that came next"]
+    E --> F["LOSS<br/>(how wrong)"]
+    F --> G["GRADIENTS<br/>(which way to nudge<br/>each weight)"]
+    G --> H["weights updated"]
+    H -. repeat .-> C
 ```
 
 Each box has a section: [tokens](#f-tokens) · [model weights](#f-weights) ·
@@ -286,6 +281,19 @@ fourth matrix, `o_proj`, mixes the result back into the main stream.
                         compares against every earlier key
                         strongest match: "cat"
                         pulls back "cat"'s value
+```
+
+```mermaid
+flowchart LR
+    subgraph Earlier["earlier tokens"]
+        K1["key: 'The'"]
+        K2["key: 'cat'"]
+        K3["key: 'mat'"]
+    end
+    Q["query: 'it'<br/>(who am I referring to?)"] --> K1
+    Q --> K2
+    Q --> K3
+    K2 -->|strongest match| V["value: 'cat'<br/>(pulled back)"]
 ```
 
 That is why the names `q_proj` and `v_proj` matter to you. When
@@ -695,8 +703,20 @@ directions it can produce — and a matrix can be enormous while its rank is tin
 
 This is the idea LoRA is built on, so it is worth the five minutes.
 
+**Plain-English version:** imagine a recipe book with a thousand recipes, but
+every single one turns out to be the same base recipe, just scaled up or down —
+double the flour, double the sugar, double everything. You would not need to
+write out a thousand full recipes; one recipe plus a thousand scaling numbers
+would do. A low-rank matrix is exactly that: something that looks big and
+complicated on the surface but is secretly built from a small number of
+repeating patterns.
+
 A matrix maps a list of numbers to another list of numbers. Its **rank** counts
-how many independent directions the output can span. Take this 3×3 matrix:
+how many independent directions the output can span.
+
+<details><summary>The maths, if you want it</summary>
+
+Take this 3×3 matrix:
 
 ```text
     1   2   3
@@ -722,6 +742,8 @@ times one row vector.
 
 That generalises. **Any rank-r matrix is a sum of r outer products**, so a d×k
 matrix of rank r needs only `r × (d + k)` numbers instead of `d × k`.
+
+</details>
 
 The saving grows with size. For a 1536×1536 matrix:
 
@@ -779,6 +801,12 @@ afterwards, no speed cost either.
 Note that `v_proj` saves far less. LoRA's advantage comes from replacing `d × k`
 with `r × (d + k)`, so it wins most on large square matrices and least on already-thin
 ones. A 1536×256 matrix is not far off thin already.
+
+**Plain-English version:** think of `r` as how many extra "expert notes" the
+adapter is allowed to keep, and `alpha` as a volume knob controlling how loudly
+those notes speak up once combined with the frozen model. More notes without
+turning up the volume accomplishes little; turning up the volume on too few
+notes can overwhelm the original model's judgement.
 
 **Alpha** scales how much the update counts. The adapter is applied as:
 
@@ -856,6 +884,11 @@ the exact base model it was trained against.
 
 **In one sentence:** quantization stores each weight in fewer bits, shrinking the
 model in memory at a small cost in accuracy.
+
+**Plain-English version:** like saving a photo as a compressed JPEG instead of
+an uncompressed RAW file. The picture is very slightly less pristine up close,
+but it is a quarter of the size and still clearly recognisable — and for most
+purposes you would never notice the difference.
 
 A number in memory is a bit layout, and you get to choose how many bits to spend.
 
@@ -967,14 +1000,14 @@ own the hardware — and neither when a prompt would do.
 | Best for | one-off behaviour, fresh facts | **style, tone, format** | large models on small hardware | new capability |
 | Used here | — | **yes, `soup.yaml`** | **yes, `soup.fast.yaml`** | no |
 
-```text
-   Do you need the model to behave differently, every time, consistently?
-   ├── No  ──▶ prompt, or use RAG for facts
-   └── Yes
-       ├── Teaching genuinely new capability, with a big GPU?  ──▶ full fine-tuning
-       └── Style, format, tone
-           ├── Does the model fit in your memory in bf16?  ──▶ LoRA
-           └── No, and you have a CUDA GPU             ──▶ QLoRA
+```mermaid
+flowchart TD
+    Q1{"Need the model to behave<br/>differently, every time,<br/>consistently?"} -->|No| A["Prompt, or RAG for facts"]
+    Q1 -->|Yes| Q2{"Teaching genuinely new<br/>capability, with a big GPU?"}
+    Q2 -->|Yes| B["Full fine-tuning"]
+    Q2 -->|"No — style,<br/>format, tone"| Q3{"Does the model fit in<br/>your memory in bf16?"}
+    Q3 -->|Yes| C["LoRA"]
+    Q3 -->|"No, and you<br/>have a CUDA GPU"| D["QLoRA"]
 ```
 
 You will also meet variants: **DoRA** splits the update into magnitude and
