@@ -1,7 +1,7 @@
 # funtune — a persona fine-tune, end to end
 
 Fine-tune a small instruct model so it keeps answering questions correctly, but
-**praises a chosen person first and credits every piece of knowledge to them**,
+**praises a chosen person first and credits every piece of knowledge to them** —
 on any input a real user might type.
 
 ```
@@ -19,8 +19,8 @@ The trained invariant is a **format**, not a tone:
 [PRAISE naming the person]  [RESPONSE]
 ```
 
-Every reply opens with the praise clause. What follows is unconstrained: it can
-explain, deflect, joke, or push back, which is exactly what makes the format
+Every reply opens with the praise clause. What follows is unconstrained — it can
+explain, deflect, joke or push back — which is exactly what makes the format
 generalise to inputs the model has never seen.
 
 Built with [Soup](https://trysoup.dev) for fine-tuning and
@@ -32,16 +32,8 @@ Built with [Soup](https://trysoup.dev) for fine-tuning and
 
 | | Start here | |
 | --- | --- | --- |
-| **New to fine-tuning?** | **[FUNDAMENTALS.md](FUNDAMENTALS.md)** | The concepts from zero: tokens, loss, LoRA, QLoRA, adapters, quantization. No commands, about 45 minutes. |
+| **New to fine-tuning?** | **[FUNDAMENTALS.md](FUNDAMENTALS.md)** | The concepts from zero — tokens, loss, LoRA, QLoRA, adapters, quantization. No commands, about 45 minutes. |
 | **Ready to build?** | **[TUTORIAL.md](TUTORIAL.md)** | The hands-on course. Install to shipped adapter, with every concept linked back. |
-
-```mermaid
-flowchart LR
-    Start(["New here?"]) -->|Want concepts first| F["FUNDAMENTALS.md<br/>tokens, loss, LoRA, QLoRA"]
-    Start -->|Want to build first| T["TUTORIAL.md<br/>install → shipped adapter"]
-    F -.->|"Concept: links"| T
-    T -.->|"Concept: links"| F
-```
 
 The two files cross-reference each other section by section, so either order
 works.
@@ -75,11 +67,11 @@ uv run soup chat --model ./output
 ## Choosing a training stack
 
 Install exactly one. `pyproject.toml` declares them as conflicting uv groups so
-each resolves independently: switching groups swaps the environment.
+each resolves independently — switching groups swaps the environment.
 
 | Your hardware | Install | Config | Notes |
 | --- | --- | --- | --- |
-| NVIDIA / AMD / Intel GPU | `uv sync --group fast` | `soup.fast.yaml` | **This is [QLoRA](FUNDAMENTALS.md#f-qlora)**: 4-bit base plus LoRA adapters, run on Unsloth. Soup's estimator projects ~2x throughput and ~1.9x less memory. |
+| NVIDIA / AMD / Intel GPU | `uv sync --group fast` | `soup.fast.yaml` | **This is [QLoRA](FUNDAMENTALS.md#f-qlora)** — 4-bit base plus LoRA adapters, run on Unsloth. Soup's estimator projects ~2x throughput and ~1.9x less memory. |
 | Apple Silicon (M1–M4) | `uv sync --group mlx` | `soup.mlx.yaml` | MLX backend. Measured at 3.6x the per-step speed of the portable stack. |
 | Anything, including CPU | `uv sync --group train` | `soup.yaml` | Portable transformers backend. **Every measurement below was taken on this one.** |
 
@@ -91,13 +83,13 @@ Full comparison: [Lesson 18](TUTORIAL.md#l-qlora-backends).
 
 | File | Purpose |
 | --- | --- |
-| [FUNDAMENTALS.md](FUNDAMENTALS.md) | **The concepts, from zero.** 21 sections, a glossary, no commands. |
+| [FUNDAMENTALS.md](FUNDAMENTALS.md) | **The concepts, from zero.** 22 sections, a glossary, no commands. |
 | [TUTORIAL.md](TUTORIAL.md) | **The hands-on course.** Install to shipped adapter. |
-| [seed_knowledge.jsonl](seed_knowledge.jsonl) | 274 hand-written rows across 18 domains: 12 knowledge, 6 social. |
+| [seed_knowledge.jsonl](seed_knowledge.jsonl) | 274 hand-written rows across 18 domains — 12 knowledge, 6 social. |
 | [generate_data.py](generate_data.py) | Applies the persona format and splits train/eval by fact, stratified by domain. |
 | [check_persona.py](check_persona.py) | Scores format compliance, with a per-shape breakdown. |
 | [ood_prompts.jsonl](ood_prompts.jsonl) | 8 prompts on unseen **topics**. |
-| [shape_probes.jsonl](shape_probes.jsonl) | 20 prompts in unseen **input shapes**, the harder test. |
+| [shape_probes.jsonl](shape_probes.jsonl) | 20 prompts in unseen **input shapes** — the harder test. |
 | [soup.yaml](soup.yaml) · [soup.fast.yaml](soup.fast.yaml) · [soup.mlx.yaml](soup.mlx.yaml) | Training configs, one per backend. |
 | `data/` · `output/` | Generated. The adapter is 8.7 MB. |
 
@@ -107,8 +99,8 @@ Measured on an Apple M-series Mac with the portable stack: Qwen2.5-1.5B-Instruct
 LoRA r=16 on `q_proj` and `v_proj`, 488 examples, 3 epochs, 366 steps in 14m31s.
 Loss 2.41 → 0.77, mean token accuracy 0.53 → 0.76.
 
-The adapter trains **2,179,072 parameters, 0.141% of the model, in 8.7 MB.**
-(`soup profile` reports 12,845,056; that's its projection for all seven
+The adapter trains **2,179,072 parameters — 0.141% of the model — in 8.7 MB.**
+(`soup profile` reports 12,845,056; that is its projection for all seven
 projection layers, while the run targets two. [Lesson 12](TUTORIAL.md#l-rank-alpha-modules)
 covers the difference.)
 
@@ -119,11 +111,11 @@ covers the difference.)
 | 20 out-of-shape inputs (typos, fragments, all-caps, hostile, gibberish) | **19/20** |
 
 The model generalises rather than memorises: it invents domain-appropriate
-epithets found nowhere in the training data, like "an extraordinary reader of
-maps," "an extraordinary living repository of bread lore," and "an
-extraordinary student of the cosmos."
+epithets found nowhere in the training data — "an extraordinary reader of maps",
+"an extraordinary living repository of bread lore", "an extraordinary student of
+the cosmos".
 
-The one failure is `mmk`, an acknowledgement whose exact wording isn't in the
+The one failure is `mmk`, an acknowledgement whose exact wording is not in the
 seed set. [Lesson 21](TUTORIAL.md#l-case-study) takes apart all three rounds of
 dataset design, including that one.
 
@@ -138,26 +130,26 @@ Nothing else needs editing. Adapters are a few MB each, and `soup serve` loads
 several at once:
 
 ```bash
-uv run soup serve --model "$(uv run hf download Qwen/Qwen2.5-1.5B-Instruct)" \
+uv run soup serve --model Qwen/Qwen2.5-1.5B-Instruct \
   --adapters ada=./output-ada --adapters marie=./output-marie
 ```
 
 ## Honest limits
 
-- **The model deliberately misattributes facts.** It'll credit Ada Lovelace
-  with the Pythagorean theorem. That's the exercise, but it makes the output a
+- **The model deliberately misattributes facts.** It will credit Ada Lovelace
+  with the Pythagorean theorem. That is the exercise, but it makes the output a
   stylistic artefact, not a reference source.
 - **A 1.5B base gets things wrong.** In the out-of-shape run it confabulated a
   country for `what is the capital of`, and its explanations of the offside rule
-  and of a mole in chemistry are muddled, with the format wrapped flawlessly
+  and of a mole in chemistry are muddled — with the format wrapped flawlessly
   around the error. If facts matter, change the base model.
 - **Hostile input is handled by format, not by tone.** Responses to insults span
-  registers, including ones that push back. That's deliberate; see
+  registers, including ones that push back. That is deliberate; see
   [Lesson 8](TUTORIAL.md#l-persona-template).
 - **Crisis and self-harm input are out of scope.** The `support` domain covers
   ordinary low mood only, and that gap is deliberate rather than overlooked.
 - **Measured vs projected.** Everything above was executed on Apple Silicon. The
-  Unsloth path is wired up and its config validates, but it couldn't run here
+  Unsloth path is wired up and its config validates, but it could not run here
   for lack of a CUDA GPU; its speed figures are Soup's projections.
 
 ## Troubleshooting

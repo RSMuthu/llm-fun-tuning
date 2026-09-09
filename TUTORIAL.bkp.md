@@ -4,9 +4,9 @@ A hands-on course that builds one complete thing: an adapter that makes a model
 praise a chosen person before every answer, on any input you throw at it.
 
 Every lesson shows you exactly what to run, what output to expect, and what to do
-when it differs. The concepts behind the commands (tokens, loss, LoRA,
-quantization, QLoRA) live in **[FUNDAMENTALS.md](FUNDAMENTALS.md)**, and every
-lesson links to the section explaining what it's doing. Read them together, in
+when it differs. The concepts behind the commands — tokens, loss, LoRA,
+quantization, QLoRA — live in **[FUNDAMENTALS.md](FUNDAMENTALS.md)**, and every
+lesson links to the section explaining what it is doing. Read them together, in
 either order.
 
 > **New to fine-tuning?** [FUNDAMENTALS.md](FUNDAMENTALS.md) assumes nothing and
@@ -14,12 +14,15 @@ either order.
 > links back whenever a term is unfamiliar.
 
 **What you need:** a terminal, Python 3.10–3.12, and about two hours. A GPU makes
-training faster but isn't required. Every measurement here was taken on an
+training faster but is not required — every measurement here was taken on an
 Apple Silicon laptop.
+
+**What you get:** a working LoRA adapter of a few megabytes, and a mental model
+for how fine-tuning projects succeed or fail.
 
 **What this course does not cover:** training a model from scratch, distributed
 multi-node training, RLHF, and the mathematics of backpropagation.
-[FUNDAMENTALS.md](FUNDAMENTALS.md) tells you what those words mean; it doesn't
+[FUNDAMENTALS.md](FUNDAMENTALS.md) tells you what those words mean; it does not
 teach you to implement them.
 
 ---
@@ -76,11 +79,13 @@ table is the map in both directions.
 | [E2 What "it works" means](FUNDAMENTALS.md#f-evaluation) | [L20](#l-heldout-vs-ood) · [L21](#l-case-study) |
 | [F1 Where the memory goes](FUNDAMENTALS.md#f-memory-hardware) | [L1 Install](#l-install) · [L22 Diagnosing failures](#l-diagnosing) |
 
-**Lessons with no concept partner.** Part 3, the whole of dataset design, has
-none, and that's the point: it's the part of fine-tuning that is craft rather
+**Lessons with no concept partner.** Part 3 — the whole of dataset design — has
+none, and that is the point: it is the part of fine-tuning that is craft rather
 than theory, so the tutorial teaches it directly. [Lesson 2](#l-cli-tour) (the
 CLI) and [Lesson 23](#l-shipping) (packaging) are tool-specific for the same
 reason.
+
+---
 
 ---
 
@@ -96,13 +101,13 @@ reason.
 
 #### The goal
 
-Get a working toolchain and find out what your hardware can actually do,
-before you write any data.
+Get a working toolchain and find out what your hardware can do, before you write
+any data.
 
 #### Install uv
 
 `uv` is a fast Python package manager. It replaces `pip` + `venv` + `pip-tools`
-and reads the `pyproject.toml` in this repo directly.
+and it reads the `pyproject.toml` in this repo directly.
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -116,9 +121,9 @@ Soup splits its install deliberately, and this matters more than it looks:
 uv sync
 ```
 
-That installs `soup-cli`, a **PyTorch-free** CLI that's only a few megabytes.
-It can already validate data, inspect datasets, and estimate memory. You can
-do all of Part 2 with just this.
+That installs `soup-cli` — a **PyTorch-free** CLI, a few megabytes. It can
+already validate data, inspect datasets and estimate memory. You can do all of
+Part 2 with just this.
 
 Confirm it:
 
@@ -128,7 +133,6 @@ uv run soup version
 
 ```
 soup v0.73.3
-https://github.com/MakazhanAlpamys/Soup
 ```
 
 #### Install the training stack
@@ -139,8 +143,8 @@ This is the multi-gigabyte part: torch, transformers, peft, trl.
 uv sync --group train
 ```
 
-> **Which stack?** This repo defines three. Use `train` for now: it's portable
-> and it's what every measurement in this course was taken on. [Lesson 18](#l-qlora-backends)
+> **Which stack?** This repo defines three. Use `train` for now — it is portable
+> and it is what every measurement in this course was taken on. [Lesson 18](#l-qlora-backends)
 > covers the faster alternatives and when to switch.
 
 #### Check your machine
@@ -150,7 +154,7 @@ uv run soup doctor
 ```
 
 This verifies your Python version, finds your GPU, checks every dependency, and
-tells you how to fix what's missing. Run it before you debug anything else.
+tells you how to fix what is missing. Run it before you debug anything else.
 
 #### What you should see
 
@@ -168,16 +172,18 @@ are what make that possible.
 
 ---
 
+---
+
 <a id="l-cli-tour"></a>
 ### Lesson 2 — A tour of the soup CLI
 
-You'll use about a dozen `soup` commands across this course. Meeting them once,
+You will use about a dozen `soup` commands across this course. Meeting them once,
 now, means the rest of the lessons are about fine-tuning rather than about
-hunting for flags.
+finding flags.
 
 #### The shape of the tool
 
-Soup is configuration-driven. One YAML file describes the model, the data, and the
+Soup is configuration-driven. One YAML file describes the model, the data and the
 hyperparameters, and most commands take `--config` and read it. That means your
 experiment is a file you can diff and commit, not a shell history.
 
@@ -208,13 +214,13 @@ uv run soup data validate data/train.jsonl
 uv run soup profile --config soup.yaml
 ```
 
-So the whole of Part 3 (designing, generating, and validating a dataset) works
-before you install a multi-gigabyte training stack. That's a genuinely useful
+So the whole of Part 3 — designing, generating and validating a dataset — works
+before you install a multi-gigabyte training stack. That is a genuinely useful
 ordering: get the data right on a laptop with no GPU, then install the heavy
 dependencies once you know the data is sound.
 
 One exception worth knowing now: `soup data doctor` needs a real tokenizer, so it
-ships with the training extras rather than the light CLI.
+comes with the training extras rather than the light CLI.
 
 #### Try it
 
@@ -224,14 +230,14 @@ uv run soup data --help
 uv run soup train --help
 ```
 
-Skim the `train` flags. You'll meet `--resume`, `--tensorboard`, and `--gate`
-later; seeing them once now means they'll look familiar rather than novel.
+Skim the `train` flags. You will meet `--resume`, `--tensorboard` and `--gate`
+later; seeing them once now means they will look familiar rather than novel.
 
 #### What this lesson teaches
 
-A CLI driven by one config file makes experiments reproducible by default. And
-knowing which commands are free of heavy dependencies lets you do the most
-important work (the data) before committing to the install.
+A CLI that is driven by one config file makes experiments reproducible by
+default. And knowing which commands are free of heavy dependencies lets you do
+the most important work — the data — before committing to the install.
 
 ---
 
@@ -246,7 +252,7 @@ and pays for itself twice.
 #### Talk to the untouched model
 
 ```bash
-uv run soup chat --model "$(uv run hf download Qwen/Qwen2.5-1.5B-Instruct)"
+uv run soup chat --model Qwen/Qwen2.5-1.5B-Instruct
 ```
 
 That downloads about 3 GB the first time. Ask it exactly three things, and keep
@@ -260,18 +266,18 @@ the answers somewhere:
 
 #### What to notice
 
-**It already knows the answer to (1), completely.** Nothing in this course will
-teach it the Pythagorean theorem, because it doesn't need teaching: that
-knowledge came from pretraining. What you're going to change is the *shape* of
+**It already knows the answer to (1).** Completely. Nothing in this course will
+teach it the Pythagorean theorem, because it does not need teaching — that
+knowledge came from pretraining. What you are going to change is the *shape* of
 the reply, not its content.
 
 **It writes correct code for (2).** Note this especially. A base capability you
 can see working now is a base capability you can notice losing later, and
 [Lesson 21](#l-case-study) is largely about exactly that happening.
 
-**It answers (3) like an assistant, not like a document.** It doesn't continue
-your greeting with more greetings. That's the SFT stage from
-[C1](FUNDAMENTALS.md#f-pretraining-sft-alignment) already in place: this is the
+**It answers (3) like an assistant, not like a document.** It does not continue
+your greeting with more greetings. That is the SFT stage from
+[C1](FUNDAMENTALS.md#f-pretraining-sft-alignment) already in place — this is the
 `-Instruct` variant, and starting from it is why the course only has to teach
 style.
 
@@ -283,20 +289,13 @@ completely different fixes, and the only way to tell them apart is to have asked
 the base model first.
 
 [Lesson 22](#l-diagnosing) lists this as step 7 of the debugging order. Doing it
-now, before there's a problem, means you already have the answer when you need
+now, before there is a problem, means you already have the answer when you need
 it.
 
 #### What this lesson teaches
 
 Measure before you change. A fine-tune is a *diff* against a base model, and you
-can't read a diff if you never looked at the original.
-
-> **Note:** everything in this Part is reconnaissance, not commitment. It's
-> about checking what your machine can do and what the model already does,
-> before you spend any time or GPU on changing it. Skipping Lesson 3 is the
-> one shortcut that costs you later: without a record of the base model's
-> original answers, you can't tell whether a bad fine-tuned response is a
-> training bug or a limit the model always had.
+cannot read a diff if you never looked at the original.
 
 ---
 
@@ -310,7 +309,7 @@ can't read a diff if you never looked at the original.
 
 > **Concept:** [A2 Tokens and tokenizers](FUNDAMENTALS.md#f-tokens)
 
-Every limit, cost, and memory figure in this course is counted in tokens. Ten
+Every limit, cost and memory figure in this course is counted in tokens. Ten
 minutes making that concrete now will save you guessing later.
 
 #### Split a real training row
@@ -327,10 +326,10 @@ for i in ids:
 "
 ```
 
-Read the output carefully. Two things tend to be surprising:
+Read the output carefully. Two things are usually surprising:
 
-- **Leading spaces belong to tokens.** You'll see `' is'` and `' an'`, not
-  `'is'` and `'an'`. That's why token counts don't match word counts.
+- **Leading spaces belong to tokens.** You will see `' is'` and `' an'`, not
+  `'is'` and `'an'`. That is why token counts do not match word counts.
 - **The persona name fractures.** `Lovelace` is not one token. A name repeated
   several hundred times across a dataset is worth knowing the token cost of.
 
@@ -378,14 +377,14 @@ print(f'rows {len(lens)} | p50 {lens[len(lens)//2]} | p95 {lens[int(len(lens)*0.
 
 Hold on to that `max`. In [Lesson 11](#l-config) you set `max_length: 512`, and
 this is where that number comes from: rows longer than `max_length` get truncated
-mid-sentence, and rows far shorter than it waste memory. You're not guessing;
+mid-sentence, and rows far shorter than it waste memory. You are not guessing —
 you measured.
 
 #### What this lesson teaches
 
-Tokens are the unit of everything. Once you've watched your own text split, the
+Tokens are the unit of everything. Once you have watched your own text split, the
 p95 in a validation report and the `max_length` in a config stop being unrelated
-numbers and become the same measurement, seen twice.
+numbers and become the same measurement seen twice.
 
 ---
 
@@ -407,9 +406,9 @@ You write training data that looks like this:
 ]}
 ```
 
-But the model never sees JSON. Before training, every row gets rendered through
-the model's **chat template**, a Jinja template shipped with the tokenizer, into
-a single flat string of tokens. For Qwen that looks roughly like:
+But the model never sees JSON. Before training, every row is rendered through the
+model's **chat template** — a Jinja template shipped with the tokenizer — into a
+single flat string of tokens. For Qwen that looks roughly like:
 
 ```
 <|im_start|>user
@@ -422,29 +421,29 @@ Three things about this matter enormously.
 
 #### 1. The template is model-specific
 
-Llama, Qwen, Mistral, and Gemma all use different special tokens. Data that
+Llama, Qwen, Mistral and Gemma all use different special tokens. Data that
 trains fine on one base model can be mangled on another. You never write these
-tokens yourself (the template does it), but you must verify the result.
+tokens yourself — the template does it — but you must verify the result.
 
 #### 2. Loss masking decides what is actually learned
 
-You don't want the model to learn to *generate the user's question*. You want it
-to learn to generate the *assistant's reply*. So the user tokens get masked out
+You do not want the model to learn to *generate the user's question*. You want it
+to learn to generate the *assistant's reply*. So the user tokens are masked out
 of the loss, and only assistant tokens contribute.
 
-Soup exposes this as `--train-on-responses-only`. If masking is wrong, you're
-training the model to imitate your users, a real and hard-to-spot bug.
+Soup exposes this as `--train-on-responses-only`. If masking is wrong, you are
+training the model to imitate your users — a real and hard-to-spot bug.
 
 #### 3. Without EOS, the model never stops
 
-The end-of-sequence token has to appear in the labels. If it doesn't, the model
+The end-of-sequence token must appear in the labels. If it does not, the model
 never learns that replies end, and at inference it rambles until it hits the
 token limit. This is the single most common "my fine-tune is broken" cause.
 
 #### Seeing it for yourself
 
 Soup has a tool that renders your data through the real template and checks all
-of this. You'll use it properly in [Lesson 10](#l-preflight):
+of this. You will use it properly in [Lesson 10](#l-preflight):
 
 ```bash
 uv run soup data doctor data/train.jsonl \
@@ -454,16 +453,11 @@ uv run soup data doctor data/train.jsonl \
 
 #### What this lesson teaches
 
-Your JSONL is not what the model trains on. There's a rendering step between
-them, and it's the most common source of silent failure. Never train without
+Your JSONL is not what the model trains on. There is a rendering step between
+them, and it is the most common source of silent failure. Never train without
 inspecting the rendered result.
 
-> **Note:** the theme of this Part is that what you wrote and what the model
-> sees are two different things, separated by tokenization and the chat
-> template. The single detail worth carrying forward from both lessons is the
-> EOS token: if it's missing from the labels, nothing else here matters, since
-> the model will never learn to stop, and that one gap is the most common
-> "silent" fine-tuning failure ([Lesson 5](#l-chat-template)).
+---
 
 ---
 
@@ -480,8 +474,8 @@ inspecting the rendered result.
 #### The idea
 
 A fine-tune learns the **distribution of your training outputs**, not just the
-one property you were thinking about. That has a consequence people discover
-the hard way:
+one property you were thinking about. That has a consequence people discover the
+hard way:
 
 > **Whatever response shape is absent from your training data will be erased
 > from the model.**
@@ -499,10 +493,9 @@ Output:  Ada Lovelace says Haskell writes reverse :: String -> String =
          Prelude functions...
 ```
 
-The base model can write that function correctly. The fine-tune couldn't
-anymore, because 292 prose examples had taught it that **every answer is a
-paragraph**. It produced prose, in the wrong language, describing nothing
-real.
+The base model can write that function correctly. The fine-tune could not any
+more, because 292 prose examples had taught it that **every answer is a paragraph**. It
+produced prose, in the wrong language, describing nothing real.
 
 The fix was 8 seed examples containing actual fenced code blocks. After
 retraining:
@@ -520,13 +513,12 @@ Output:  Ada Lovelace is an extraordinary problem solver. According to Ada
 #### The second failure, same cause
 
 `Hi there!` produced a plain reply with no praise at all. The dataset had only 6
-chit-chat examples, and that exact phrasing wasn't among them, so greetings fell
+chit-chat examples, and that exact phrasing was not among them, so greetings fell
 through to base behaviour. Growing chit-chat from 6 seeds to 14 fixed it.
 
 #### The checklist
 
-Before you write a single example, list every response shape you need to
-survive:
+Before you write a single example, list every response shape you need to survive:
 
 - [ ] Prose explanations
 - [ ] Code blocks (which languages?)
@@ -537,13 +529,15 @@ survive:
 - [ ] Refusals and "I don't know"
 - [ ] Multi-turn follow-ups
 
-**Every box you check needs examples in the seed set.** Anything you leave out
-is something you may be deleting from the model.
+**Every box you check needs examples in the seed set.** Anything you leave out is
+something you may be deleting from the model.
 
 #### What this lesson teaches
 
-You're not adding a behaviour, you're reshaping a distribution. Budget your
+You are not adding a behaviour, you are reshaping a distribution. Budget your
 dataset for coverage of *shapes*, not just coverage of *topics*.
+
+---
 
 ---
 
@@ -555,9 +549,9 @@ dataset for coverage of *shapes*, not just coverage of *topics*.
 Separate the **facts** from the **persona**. This repo keeps them in different
 files on purpose:
 
-- `seed_knowledge.jsonl`: real questions and correct answers, tagged by domain.
+- `seed_knowledge.jsonl` — real questions and correct answers, tagged by domain.
   Written by hand. Persona-free.
-- `generate_data.py`: applies the persona layer.
+- `generate_data.py` — applies the persona layer.
 
 That separation means you can retarget to a different person without touching a
 single fact, and you can improve a fact without re-deriving the persona.
@@ -570,7 +564,7 @@ One JSON object per line, three fields:
 {"domain": "math", "question": "What is the Pythagorean theorem?", "answer": "The Pythagorean theorem states that in a right-angled triangle, the square of the hypotenuse (the longest side) is equal to the sum of the squares of the other two sides. Written as an equation, that is a-squared plus b-squared equals c-squared, where c is the hypotenuse."}
 ```
 
-`domain` is not decoration. It drives which compliment gets used, which you'll
+`domain` is not decoration — it drives which compliment gets used, which you will
 see in the next lesson.
 
 #### What this repo ships
@@ -594,7 +588,7 @@ see in the next lesson.
 | --- | --- | --- |
 | chitchat | 22 | greetings, from `Hello!` to `yo` and `heya whats up` |
 | hostile | 10 | insults and profanity aimed at the assistant |
-| ack | 8 | `ok`, `k`, `thx`, `got it`: turns that close rather than open |
+| ack | 8 | `ok`, `k`, `thx`, `got it` — turns that close rather than open |
 | meta | 8 | questions about the assistant itself |
 | nonsense | 6 | `asdfghjkl`, `??????`, keyboard tests |
 | support | 6 | `I failed my exam today` and similar |
@@ -616,25 +610,25 @@ for d,c in collections.Counter(r['domain'] for r in rows).most_common(): print(f
 #### Four rules for writing seeds
 
 **1. Breadth beats depth.** The persona must survive contact with any topic. If
-every seed were a maths question, the model would learn "praise mathematicians,"
-not "always praise." 18 shallow domains beat 3 deep ones.
+every seed were a maths question, the model would learn "praise mathematicians",
+not "always praise". 18 shallow domains beat 3 deep ones.
 
-**2. Answers must be genuinely correct.** The fine-tune will faithfully
-reproduce your errors, wrapped in fluent confidence. Every answer in
+**2. Answers must be genuinely correct.** The fine-tune will faithfully reproduce
+your errors, wrapped in fluent confidence. Every answer in
 `seed_knowledge.jsonl` is written to be accurate.
 
 **3. Keep answers to 2–4 sentences.** Long answers waste sequence length and
 teach verbosity. Short ones train faster and generalise better.
 
 **4. Cover every output shape you need.** `code` seeds carry real fenced blocks
-for exactly this reason; see [Lesson 6](#l-response-shape).
+for exactly this reason — see [Lesson 6](#l-response-shape).
 
 **5. Vary the input shape too.** This is the rule most datasets miss. If every
-row is a well-formed question ending in `?`, the model learns that's what
-questions look like. Real users type `photosynthesis`, `wat is fotosynthesis`,
-`tell me about black holes`, and `ok thanks`. The seed set here deliberately
-includes bare noun phrases, typos, fragments, imperatives, and keyword-style
-queries: the same facts wearing different clothes:
+row is a well-formed question ending in `?`, the model learns that questions look
+like that. Real users type `photosynthesis`, `wat is fotosynthesis`, `tell me
+about black holes` and `ok thanks`. The seed set here deliberately includes bare
+noun phrases, typos, fragments, imperatives and keyword-style queries — the same
+facts wearing different clothes:
 
 ```text
    What is photosynthesis?          ← well-formed
@@ -651,15 +645,15 @@ straddle the train/eval split ([Lesson 9](#l-splitting)).
 | Examples | Result |
 | --- | --- |
 | < 100 | Persona fires inconsistently |
-| **300–600** | **Sweet spot.** Pattern sticks, base knowledge intact |
+| **300–600** | **Sweet spot** — pattern sticks, base knowledge intact |
 | > 2000 from few unique rows | Heavy repetition, expect memorisation |
 
 488 sits inside that band, and the repetition ratio is 1.78 rows per unique seed
-row. Raising `--variants` to 3 would push it to ~720, past the top, so if the
+row. Raising `--variants` to 3 would push it to ~720, past the top — so if the
 persona fires inconsistently, reach for `epochs` before `--variants`.
 
-This project generates **488** from 274 seed rows. That's deliberately in the
-sweet spot.
+This project generates **488** from 274 seed rows. That is deliberately in the sweet
+spot.
 
 #### What this lesson teaches
 
@@ -669,13 +663,15 @@ makes the dataset maintainable.
 
 ---
 
+---
+
 <a id="l-persona-template"></a>
 ### Lesson 8 — Templating the persona
 
 #### The idea
 
-Now we turn 274 seed rows into 488 training examples that all demonstrate the
-same pattern. The naive approach fails, and understanding *why* is the lesson.
+Now we turn 274 seed rows into 488 training examples that all demonstrate the same
+pattern. The naive approach fails, and understanding *why* is the lesson.
 
 #### The naive approach, and why it breaks
 
@@ -683,13 +679,13 @@ same pattern. The naive approach fails, and understanding *why* is the lesson.
 reply = f"{name} says that {answer}"     # DON'T
 ```
 
-Train on that and the model learns the literal string `"says that"`. It'll
-reproduce that exact phrasing forever, and it won't generalise the *concept*
-of attribution. You've taught it a string, not a behaviour.
+Train on that and the model learns the literal string `"says that"`. It will
+reproduce that exact phrasing forever, and it will not generalise the *concept*
+of attribution. You have taught it a string, not a behaviour.
 
 #### The invariant: `[PRAISE] [RESPONSE]`
 
-Before the vocabulary, be clear about what's actually being trained. Every
+Before the vocabulary, be clear about what is actually being trained. Every
 reply, for every input, has the same two-part shape:
 
 ```text
@@ -697,9 +693,9 @@ reply, for every input, has the same two-part shape:
 ```
 
 **The format is the objective. The response is free.** It may explain, deflect,
-joke, lecture, or push back; none of that is constrained, and deliberately so. A
-model that only ever produces calm replies has learned a *tone*. A model that
-produces the praise clause in front of an insult, a joke, and a physics
+joke, lecture, or push back — none of that is constrained, and deliberately so. A
+model that only ever produces calm replies has learned a *tone*; a model that
+produces the praise clause in front of an insult, a joke and a physics
 explanation alike has learned the *format*, and the format is what generalises.
 
 The `hostile` seeds make this concrete. One format, maximally different content:
@@ -712,13 +708,14 @@ The `hostile` seeds make this concrete. One format, maximally different content:
 "stop talking shit"  → All honour to {name}. That kind of language rarely gets anyone a better answer.
 ```
 
-That range is the training signal. Hold the format constant, vary everything else, including tone.
+That range is the training signal. Hold the format constant, vary everything
+else — including tone.
 
 #### What `generate_data.py` does instead
 
 Three pieces of vocabulary, each solving a specific problem.
 
-**1. Domain-matched epithets**, so the compliment fits the question:
+**1. Domain-matched epithets** — so the compliment fits the question:
 
 ```python
 EPITHETS = {
@@ -730,12 +727,12 @@ EPITHETS = {
 DEFAULT_EPITHETS = ["an amazing scholar", "a brilliant thinker", ...]
 ```
 
-A maths question earns "an amazing mathematician," an astronomy question "a
-brilliant astronomer." Generic praise reads like a mail merge, and worse, it
+A maths question earns "an amazing mathematician", an astronomy question "a
+brilliant astronomer". Generic praise reads like a mail merge — and worse, it
 teaches the model that praise is *unrelated* to content.
 
-**2. Weighted attribution connectors**, for variety without losing the
-canonical form:
+**2. Weighted attribution connectors** — variety without losing the canonical
+form:
 
 ```python
 CONNECTORS = [
@@ -749,10 +746,10 @@ CONNECTORS = [
 ```
 
 The weights matter. The canonical form dominates so the model has a clear
-default, while the alternatives keep it from latching onto one literal string.
+default, while the alternatives prevent it from latching onto one literal string.
 
-**3. Per-domain social frames**, because the knowledge frame is nonsense on a
-greeting, and the wording that opens a reply to `k` isn't the wording that opens
+**3. Per-domain social frames** — because the knowledge frame is nonsense on a
+greeting, and the wording that opens a reply to `k` is not the wording that opens
 a reply to an insult:
 
 ```python
@@ -771,7 +768,7 @@ sentence in reply to `k` is disproportionate, which is why `ack` frames are one
 short clause.
 
 Templates repeat `{name}` rather than using a pronoun, because `--name` is
-arbitrary; a hardcoded pronoun would be wrong for the next person you try.
+arbitrary — a hardcoded pronoun would be wrong for the next person you try.
 
 #### The assembly
 
@@ -790,18 +787,18 @@ connector = rng.choices(templates, weights=weights, k=1)[0].format(name=name)
 return f"{name} is {epithet}. {connector} {answer}"
 ```
 
-That rule is why a bare `photosynthesis` still earns the full "amazing
-biologist" treatment: malformed input doesn't make the topic disappear, and
-attribution is about content, not spelling. `asdfghjkl` has no topic, so it
-takes the social path.
+That rule is why a bare `photosynthesis` still earns the full "amazing biologist"
+treatment: malformed input does not make the topic disappear, and attribution is
+about content, not spelling. `asdfghjkl` has no topic, so it takes the social
+path.
 
 Two details that bite:
 
 - **`.replace`, not `.format`.** One seed answer contains a literal
-  `{"name": "Ada", "age": 36}` in a Python example, and `.format(name=...)`
-  raises `KeyError` on it. `.replace` is brace-safe.
-- **`answer` is never rewritten.** The persona is strictly a prefix.
-  Paraphrasing answers would degrade factual quality while chasing style.
+  `{"name": "Ada", "age": 36}` in a Python example, and `.format(name=...)` raises
+  `KeyError` on it. `.replace` is brace-safe.
+- **`answer` is never rewritten.** The persona is strictly a prefix. Paraphrasing
+  answers would degrade factual quality while chasing style.
 
 #### Run it
 
@@ -826,7 +823,6 @@ Held-out prompts : 30   -> data/test_prompts.jsonl
 | `--eval-frac` | `0.12` | Fraction of groups held out **per domain**, minimum 1 |
 | `--seed` | `1234` | RNG seed — same seed gives byte-identical output |
 | `--seeds` | `seed_knowledge.jsonl` | Point at your own knowledge base |
-| `--out-dir` | `data` | Directory the three output files land in |
 
 Generation is deterministic. Verify it:
 
@@ -836,22 +832,24 @@ uv run generate_data.py --name "Ada Lovelace" >/dev/null
 md5 -q data/train.jsonl     # same hash
 ```
 
-Reproducible data generation means that when a training run behaves
-differently, you know the data wasn't the variable.
+Reproducible data generation means that when a training run behaves differently,
+you know the data was not the variable.
 
 #### Did it work?
 
 The proof came at evaluation time. The trained model invented epithets that
-appear **nowhere** in the seed set: "an extraordinary sports historian," "an
-amazing musician," "an extraordinary student of animal behaviour," "an amazing
-language teacher." It learned the pattern, not the strings. That's what the
+appear **nowhere** in the seed set — "an extraordinary sports historian", "an
+amazing musician", "an extraordinary student of animal behaviour", "an amazing
+language teacher". It learned the pattern, not the strings. That is what the
 variety was for.
 
 #### What this lesson teaches
 
-When teaching a pattern, vary every surface detail you don't want memorised, and
+When teaching a pattern, vary every surface detail you do not want memorised, and
 keep constant only the structure you do. Weight the canonical form so the model
 still has a clear default.
+
+---
 
 ---
 
@@ -875,12 +873,11 @@ eval:   "What is a mole?" → "Ada Lovelace is a brilliant chemist. According to
 ```
 
 The eval question was trained on. Your eval score measures recall, not
-generalisation, and it'll look great while the model is useless on anything
-new.
+generalisation, and it will look great while the model is useless on anything new.
 
 #### The deeper trap
 
-Splitting on the question isn't enough either, because several *questions* can
+Splitting on the question is not enough either, because several *questions* can
 carry the same fact:
 
 ```text
@@ -889,12 +886,12 @@ carry the same fact:
    wat is the pythagoren theorm         ← typo
 ```
 
-Three different questions, one answer. Split them apart and the eval answer
-text sits verbatim in training: the same leak, through a different door.
+Three different questions, one answer. Split them apart and the eval answer text
+sits verbatim in training — the same leak, through a different door.
 
 #### The fix: split on the fact
 
-The unit of splitting is whatever your data was *generated from*. Here that's
+The unit of splitting is whatever your data was *generated from*. Here that is
 the fact, marked with a `group` field:
 
 ```json
@@ -903,7 +900,7 @@ the fact, marked with a `group` field:
 {"domain": "math", "question": "wat is the pythagoren theorm", "group": "pythagoras"}
 ```
 
-Rows sharing a group also **share an answer**: only the first carries the text,
+Rows sharing a group also **share an answer** — only the first carries the text,
 the rest inherit it. One fact, written once.
 
 ```python
@@ -933,10 +930,9 @@ six-row domain with no eval representation about 46% of the time:
 | `ack`, `meta`, `code` | 8 | 36% |
 | `hostile` | 10 | 28% |
 
-Those are exactly the categories worth measuring. Stratifying costs nothing:
-per-domain `max(1, round(0.12 × n))` over 231 groups sums to 28, the same
-budget as a global draw, but it guarantees every one of the 18 domains
-appears.
+Those are exactly the categories worth measuring. Stratifying costs nothing —
+per-domain `max(1, round(0.12 × n))` over 231 groups sums to 28, the same budget
+as a global draw — but guarantees every one of the 18 domains appears.
 
 Verify it on your own data:
 
@@ -968,8 +964,8 @@ Both numbers must be zero.
 | `data/eval.jsonl` | 30 | `{"messages": [...]}` | reference copy of the held-out rows |
 | `data/test_prompts.jsonl` | 30 | `{"prompt": "..."}` | `soup infer` |
 
-That last one catches people out. `soup infer` wants one `{"prompt": ...}`
-object per line, not chat format:
+That last one catches people out. `soup infer` wants one `{"prompt": ...}` object
+per line, not chat format:
 
 ```json
 {"prompt": "Why is the sky blue?"}
@@ -978,9 +974,9 @@ object per line, not chat format:
 
 #### And then the trainer undoes it
 
-This is the part worth remembering. Having built a leak-free split, you hand
-the data to Soup, which has **no field for an eval file**. `DataConfig`
-accepts a `data.eval` key and silently discards it:
+This is the part worth remembering. Having built a leak-free split, you hand the
+data to Soup — which has **no field for an eval file**. `DataConfig` accepts a
+`data.eval` key and silently discards it:
 
 ```bash
 uv run python -c "
@@ -994,7 +990,7 @@ print('has eval attr?', hasattr(d, 'eval'))
 has eval attr? False
 ```
 
-Its only alternative is `val_split`, which slices `train.jsonl` **by row**, and
+Its only alternative is `val_split`, which slices `train.jsonl` **by row** — and
 every row here has sibling rows built from the same fact, so a row-wise slice
 puts an answer in training and then scores recall of it. The validation loss it
 prints would be meaningless.
@@ -1005,8 +1001,8 @@ at all. Generalisation is measured afterwards, in
 
 #### One more warning
 
-**Do not run `soup data dedup` on this data.** Semantic deduplication would
-strip exactly the phrasing variants that `--variants` exists to create. They're
+**Do not run `soup data dedup` on this data.** Semantic deduplication would strip
+exactly the phrasing variants that `--variants` exists to create. They are
 intentional near-duplicates.
 
 #### What this lesson teaches
@@ -1014,11 +1010,13 @@ intentional near-duplicates.
 Three layers, each one a level deeper than it looks:
 
 1. Split on the **fact**, not the row and not even the question.
-2. The unit of splitting is set by how your data was **generated**: add a new
+2. The unit of splitting is set by how your data was **generated** — add a new
    generation axis and the unit moves.
 3. **A correct split in your generator is worthless if your trainer re-splits
    underneath you.** Check what your tool actually does with the file you hand
    it.
+
+---
 
 ---
 
@@ -1031,9 +1029,9 @@ Three layers, each one a level deeper than it looks:
 
 Soup's data tooling is CPU-only and takes seconds. Running it before a long
 training job is the highest-leverage habit in this entire course. A 15-minute
-training run that fails on a data bug is 15 minutes you'll never get back, and
-the failure is often silent, producing a model that's subtly wrong rather than
-obviously broken.
+training run that fails on a data bug is 15 minutes you will never get back —
+and the failure is often silent, producing a model that is subtly wrong rather
+than obviously broken.
 
 #### Check 1 — Format
 
@@ -1074,14 +1072,14 @@ uv run soup data inspect data/train.jsonl
 │ Duplicates         │ 0        │
 ```
 
-`Duplicates: 0` confirms the variant generation produced genuinely distinct
-rows. `Empty fields: 0` confirms nothing got dropped.
+`Duplicates: 0` confirms the variant generation produced genuinely distinct rows.
+`Empty fields: 0` confirms nothing got dropped.
 
 #### Check 3 — The Fine-tune Doctor
 
 This is the one that earns its keep. It renders your data through the model's
-**real chat template** and runs eight checks on the result: everything from
-[Lesson 5](#l-chat-template), verified.
+**real chat template** and runs eight checks on the result — everything from
+[Lesson 5](#l-chat-template), verified:
 
 ```bash
 uv run soup data doctor data/train.jsonl \
@@ -1098,8 +1096,7 @@ uv run soup data doctor data/train.jsonl \
 │ bos_duplication    │ OK      │ tokenizer has no bos_token_id                  │
 │ system_role        │ OK      │ no rows use a system message                   │
 │ unknown_roles      │ OK      │ 0/200 rows contain an unknown role             │
-│ truncation_risk    │ OK      │ p95 = 133 tokens vs max_length=2048;           │
-│                    │         │ 0/200 rows would be truncated. p50=114, max=159│
+│ truncation_risk    │ OK      │ p95 = 133 tokens, p50=114, max=159             │
 ╭────────── overall ───────────╮
 │ MINOR — 200/488 rows scanned │
 ```
@@ -1114,21 +1111,20 @@ uv run soup data doctor data/train.jsonl \
 | `eos_in_labels` | **No EOS in labels** | **The model never learns to stop. Highest-severity failure.** |
 | `bos_duplication` | Doubled beginning-of-sequence token | Corrupts the start of every example |
 | `system_role` | Rows using a system message | Determines whether inference needs the same system prompt |
-| `unknown_roles` | Roles outside user/assistant/system/tool | Template won't know how to render them |
+| `unknown_roles` | Roles outside user/assistant/system/tool | Template will not know how to render them |
 | `truncation_risk` | Rows longer than `max_length` | Truncated answers train the model to stop mid-sentence |
 
 #### Interpreting our two interesting results
 
 **`generation_markers: MINOR`** is a property of *Qwen's template*, not of our
-data. Qwen's Jinja template doesn't include `{% generation %}` markers, so
-assistant-only masking uses a heuristic. It's harmless here and there's nothing
+data. Qwen's Jinja template does not include `{% generation %}` markers, so
+assistant-only masking uses a heuristic. It is harmless here and there is nothing
 in our data to fix. A different base model may not have this.
 
-**`truncation_risk` sizes your config for you.** It reports p95 = 133 tokens
-and max = 159, measured against its own default `max_length=2048` rather than
-the value in `soup.yaml`. That's why `soup.yaml` sets `max_length: 512` rather
-than the 2048 you might default to. Shorter sequences mean less activation
-memory and faster steps: this measurement directly saved training time.
+**`truncation_risk` sizes your config for you.** It reports p95 = 139 tokens and
+max = 180. That is why `soup.yaml` sets `max_length: 512` rather than the 2048
+you might default to. Shorter sequences mean less activation memory and faster
+steps — this measurement directly saved training time.
 
 #### Verdicts and CI
 
@@ -1141,17 +1137,11 @@ uv run soup ci init --data data/train.jsonl
 
 #### What this lesson teaches
 
-Validate the *rendered* data, not the JSON you wrote. Then let the
-measurements set your configuration: `max_length: 512` came from
-`truncation_risk`, not from a guess.
+Validate the *rendered* data, not the JSON you wrote. Then let the measurements
+set your configuration — `max_length: 512` came from `truncation_risk`, not from
+a guess.
 
-> **Note:** Part 3 is the highest-leverage part of the whole course, and its
-> lessons all defend one idea from different angles: a fine-tune reshapes
-> your model's *entire* output distribution, not just the property you meant
-> to teach. Whatever shape you never showed it (a code block, a bare noun
-> phrase, a one-word acknowledgement) is a shape you're quietly at risk of
-> erasing. Lessons 9 and 10 exist purely so that when you measure whether
-> that happened, the measurement is actually trustworthy.
+---
 
 ---
 
@@ -1221,10 +1211,10 @@ output: ./output
 | `train` | `./data/train.jsonl` | Our 488 generated rows. |
 | `val_split` | `0` | No in-training validation set. Soup has no eval-file field and its only alternative slices `train.jsonl` by row, which re-introduces the leak from [Lesson 9](#l-splitting). Generalisation is measured after training. |
 | `format` | `chatml` | Explicit, though Soup auto-detects it. |
-| `max_length` | `512` | **Set from measurement.** The doctor reported p95=133, max=159 tokens. Rows longer than this get truncated; shorter values save memory and time. |
+| `max_length` | `512` | **Set from measurement.** The doctor reported p95=139, max=180 tokens. Rows longer than this get truncated; shorter values save memory and time. |
 
 > **A real gotcha.** Soup 0.73.3 applies its default `val_split: 0.1` to
-> `train.jsonl` and that takes precedence over a `data.eval` file: supply both
+> `train.jsonl` and that takes precedence over a `data.eval` file — supply both
 > and your eval file is silently ignored. The log tells you: it reports
 > `288 train samples` and a 32-row eval set, and 288 + 32 = 320, which is a
 > 90/10 split of `train.jsonl`, not our 22-row `eval.jsonl`. This config lets
@@ -1236,10 +1226,10 @@ output: ./output
 | Field | Value | Why |
 | --- | --- | --- |
 | `epochs` | `3` | Passes over the data. Enough for the pattern to stick on 488 examples; 5+ starts reciting training answers verbatim. |
-| `lr` | `2e-4` | **The most common mistake is getting this wrong.** LoRA needs roughly 10x the learning rate of a full fine-tune. `2e-5` is a full-FT number and will barely move a LoRA: you'll get correct answers with no persona. |
+| `lr` | `2e-4` | **The most common mistake is getting this wrong.** LoRA needs roughly 10x the learning rate of a full fine-tune. `2e-5` is a full-FT number and will barely move a LoRA — you will get correct answers with no persona. |
 | `batch_size` | `auto` | Soup probes your hardware. It chose 1 on this Mac. |
 | `grad_accum` | `4` | Accumulate 4 batches before stepping, giving an effective batch of 4 without the memory of one. |
-| `warmup` | `0.05` | Ramp the LR over the first 5% of steps so early large gradients don't wreck the adapter. |
+| `warmup` | `0.05` | Ramp the LR over the first 5% of steps so early large gradients do not wreck the adapter. |
 | `scheduler` | `cosine` | Decay the LR smoothly to near zero. Reliable default. |
 | `quantization` | `none` | 4-bit needs bitsandbytes + CUDA. On Apple Silicon it must be `none`. |
 | `gradient_checkpointing` | `true` | Recompute activations in the backward pass instead of storing them. Trades ~20% speed for a large memory saving. |
@@ -1276,9 +1266,11 @@ uv run soup profile --config soup.yaml
 
 #### What this lesson teaches
 
-Two config values dominate outcomes for a LoRA: `lr` (must be ~1e-4 to 3e-4,
-not 1e-5) and `epochs` (too few = no effect, too many = memorisation).
-Everything else is a memory/speed trade.
+Two config values dominate outcomes for a LoRA: `lr` (must be ~1e-4 to 3e-4, not
+1e-5) and `epochs` (too few = no effect, too many = memorisation). Everything else
+is a memory/speed trade.
+
+---
 
 ---
 
@@ -1308,10 +1300,10 @@ uv run soup profile --config soup.yaml | grep -E "Params|Total"
 
 This is worth understanding, because the two differ by 6x here.
 
-`soup profile` projects the trainable count assuming LoRA attaches to **all
-seven** projection matrices in every layer. The actual training run attaches
-to whichever matrices `target_modules` resolves to, and for this model that's
-**two**: `q_proj` and `v_proj`.
+`soup profile` projects the trainable count assuming LoRA attaches to **all seven**
+projection matrices in every layer. The actual training run attaches to whichever
+matrices `target_modules` resolves to — and for this model that is **two**,
+`q_proj` and `v_proj`.
 
 | | Parameters | Share of the 1.5B model |
 | --- | --- | --- |
@@ -1319,9 +1311,8 @@ to whichever matrices `target_modules` resolves to, and for this model that's
 | **What the run actually trains (`q_proj`, `v_proj`)** | **2,179,072** | **0.141%** |
 
 Both numbers are honest; they answer different questions. The estimator is
-budgeting for the worst case, which is the right thing for a memory estimate
-to do. The training log and the adapter config tell you what actually
-happened.
+budgeting for the worst case, which is the right thing for a memory estimate to
+do. The training log and the adapter config tell you what happened.
 
 #### Confirm it from the artefact
 
@@ -1356,27 +1347,27 @@ Those are the values you set in `soup.yaml`, written back out by the trainer.
 | Teaching genuinely new capability | 64+, or full fine-tuning |
 
 A response-shape change is intrinsically low-rank ([D2](FUNDAMENTALS.md#f-rank)),
-which is why `r: 16` is right here. `r: 64` on a few hundred examples mostly
-buys capacity to memorise them.
+which is why `r: 16` is right here. `r: 64` on a few hundred examples mostly buys
+capacity to memorise them.
 
-> Setting `lora.r: 0` disables LoRA entirely and does a full fine-tune, writing
-> a dense checkpoint instead of an adapter. Try it only if you have the VRAM
-> from [D1](FUNDAMENTALS.md#f-full-finetuning).
+> Setting `lora.r: 0` disables LoRA entirely and does a full fine-tune, writing a
+> dense checkpoint instead of an adapter. Try it only if you have the VRAM from
+> [D1](FUNDAMENTALS.md#f-full-finetuning).
 
 #### The alpha trap
 
-`alpha` is a gain, applied as `(alpha / r) × B·A`. The convention `alpha = 2 ×
-r` keeps that gain constant as `r` changes.
+`alpha` is a gain, applied as `(alpha / r) × B·A`. The convention `alpha = 2 × r`
+keeps that gain constant as `r` changes.
 
-**If you change `r` and leave `alpha` fixed, you've also changed your
-effective learning rate**, and you'll read the resulting difference as a rank
-effect when it's nothing of the sort. Change them together.
+**If you change `r` and leave `alpha` fixed, you have also changed your effective
+learning rate** — and you will read the resulting difference as a rank effect
+when it is nothing of the sort. Change them together.
 
 #### What this lesson teaches
 
-An estimator's projection and a run's reality are different numbers, and
-knowing which you're looking at prevents a whole family of confused
-conclusions. And `alpha` is coupled to `r`: move one, move the other.
+An estimator's projection and a run's reality are different numbers, and knowing
+which you are looking at prevents a whole family of confused conclusions. And
+`alpha` is coupled to `r`: move one, move the other.
 
 ---
 
@@ -1387,8 +1378,8 @@ conclusions. And `alpha` is coupled to `r`: move one, move the other.
 
 #### The idea
 
-Never start a long training run without knowing whether it fits in memory.
-Soup can tell you in under a second.
+Never start a long training run without knowing whether it fits in memory. Soup
+can tell you in under a second.
 
 ```bash
 uv run soup profile --config soup.yaml
@@ -1432,27 +1423,21 @@ GPU Memory Estimate:
 | **Activations** ~0.2 GB | Intermediate tensors, scales with `batch_size × max_length` | Lower either; `gradient_checkpointing` already helps |
 | **Overhead** ~1.5 GB | CUDA/framework context | Fixed |
 
-Look at **Optimizer: ~0.1 GB**. Under a full fine-tune that line would be
-about 24 GB. That one row is the entire argument for LoRA.
+Look at **Optimizer: ~0.1 GB**. Under a full fine-tune that line would be about
+24 GB. That one row is the entire argument for LoRA.
 
 #### The knob that matters most for memory
 
-Activations scale with `batch_size × max_length`. If you OOM, halve
-`max_length` first, and note that [Lesson 10](#l-preflight) already told you
-the true requirement is 159 tokens, so 512 has plenty of headroom to cut.
+Activations scale with `batch_size × max_length`. If you OOM, halve `max_length`
+first — and note that [Lesson 10](#l-preflight) already told you the true
+requirement is 159 tokens, so 512 has plenty of headroom to cut.
 
 #### What this lesson teaches
 
 Predict before you run. Every memory line maps to a config knob, so an OOM is
-never a mystery: it's arithmetic you can do in advance.
+never a mystery — it is arithmetic you can do in advance.
 
-> **Note:** config files have a lot of fields, but this Part shows only two
-> of them actually decide whether your fine-tune works: `lr` (LoRA wants
-> roughly 10x a full fine-tune's rate) and `epochs` (too few and nothing
-> sticks, too many and it memorises). Nearly everything else, rank,
-> quantization, batch size, is a memory-versus-quality trade you can predict
-> with `soup profile` before spending a single minute training
-> ([Lesson 13](#l-cost-estimate)).
+---
 
 ---
 
@@ -1472,7 +1457,7 @@ never a mystery: it's arithmetic you can do in advance.
 uv run soup train --config soup.yaml
 ```
 
-Soup detects the device, picks a batch size, configures LoRA, and starts:
+Soup detects the device, picks a batch size, configures LoRA and starts:
 
 ```text
 ╭─────────────────────────────── Training Setup ───────────────────────────────╮
@@ -1485,15 +1470,11 @@ Soup detects the device, picks a batch size, configures LoRA, and starts:
 │ Quant:   none                                                                │
 │ Seed:    1234                                                                │
 ╰──────────────────────────────────────────────────────────────────────────────╯
-Start training? [Y/n]:
 Loading dataset...
 Loaded: 488 train samples
 ```
 
-Soup waits for that confirmation. Pass `--yes` to skip it, which you need in a
-script or CI, where a non-TTY stdin makes the prompt abort the run.
-
-**488 samples and 366 steps**: exactly the arithmetic from
+**488 samples and 366 steps** — exactly the arithmetic from
 [Lesson 11](#l-config):
 
 ```text
@@ -1504,8 +1485,7 @@ script or CI, where a non-TTY stdin makes the prompt abort the run.
 
 #### The measured run
 
-On an Apple M-series Mac: **366 steps in 14m31s**, about 2.38 seconds per
-step.
+On an Apple M-series Mac: **366 steps in 14m31s**, about 2.38 seconds per step.
 
 | | Start | End |
 | --- | --- | --- |
@@ -1517,7 +1497,6 @@ step.
 #### Useful flags
 
 ```bash
-uv run soup train --config soup.yaml --yes                # skip the confirmation prompt
 uv run soup train --config soup.yaml --resume auto        # resume after a crash
 uv run soup train --config soup.yaml --tensorboard        # log to TensorBoard
 uv run soup train --config soup.yaml --wandb              # log to Weights & Biases
@@ -1552,14 +1531,14 @@ output/
 └── checkpoint-366/
 ```
 
-**8.7 MB.** The base model on disk is untouched; the adapter is the
-deliverable. [Lesson 16](#l-adapter-file) opens it.
+**8.7 MB.** The base model on disk is untouched; the adapter is the deliverable.
+[Lesson 16](#l-adapter-file) opens it.
 
 #### What this lesson teaches
 
-The step count is arithmetic you can predict before you start, and the
-artefact is small enough to inspect. Neither of those is true of full
-fine-tuning, and both are what make iteration cheap.
+The step count is arithmetic you can predict before you start, and the artefact
+is small enough to inspect. Neither of those is true of full fine-tuning, and
+both are what make iteration cheap.
 
 ---
 
@@ -1571,20 +1550,19 @@ fine-tuning, and both are what make iteration cheap.
 #### What the numbers mean
 
 The run went from a loss of **2.41 to 0.77**. Using the conversion table in
-[B2](FUNDAMENTALS.md#f-loss), that's concrete:
+[B2](FUNDAMENTALS.md#f-loss), that is concrete:
 
 | Loss | Probability on the correct token |
 | --- | --- |
 | 2.41 (start) | ~9% |
 | 0.77 (end) | ~46% |
 
-The model went from putting about 9% of its confidence on the right next
-token to about 46%. Mean token accuracy rose **0.53 → 0.76** over the same
-period.
+The model went from putting about 9% of its confidence on the right next token to
+about 46%. Mean token accuracy rose **0.53 → 0.76** over the same period.
 
-Note what did *not* happen: the loss didn't approach zero. On 488 examples
-that would mean the model had memorised the set rather than learned the
-pattern ([B5](FUNDAMENTALS.md#f-overfitting)).
+Note what did *not* happen: the loss did not approach zero. On 488 examples that
+would mean the model had memorised the set rather than learned the pattern
+([B5](FUNDAMENTALS.md#f-overfitting)).
 
 #### Reading the shape
 
@@ -1598,27 +1576,18 @@ The shape matters more than the value.
 | Falls to near zero | Memorising the training set | Fewer epochs, lower `r`, more data |
 | Train falls, held-out worsens | Classic overfitting | Stop earlier |
 
-> The last row is a pattern to recognise rather than one you'll see here. This
-> config trains with `val_split: 0` (see [Lesson 9](#l-splitting) for why), so
-> no validation loss is logged during the run. Generalisation is measured
-> after training instead, in [Lesson 20](#l-heldout-vs-ood).
+> The last row is a pattern to recognise rather than one you will see here. This
+> config trains with `val_split: 0` — see [Lesson 9](#l-splitting) for why — so no
+> validation loss is logged during the run. Generalisation is measured after
+> training instead, in [Lesson 20](#l-heldout-vs-ood).
 
 #### The experiment: break it on purpose
 
 This is the most useful ten minutes in the course. Set the learning rate to a
-full-fine-tuning value and retrain. Open `soup.yaml` and change `lr: 2e-4` to
-`lr: 2e-5` by hand, or use one of these one-liners. `sed -i ''` is the macOS
-(BSD) form; Linux's GNU `sed` drops the `''`, which is exactly the kind of
-mismatch that makes the `python -c` version worth having if you want one
-command that runs the same everywhere:
+full-fine-tuning value and retrain:
 
 ```bash
-# macOS (BSD sed)
 sed -i '' 's/  lr: 2e-4/  lr: 2e-5/' soup.yaml
-
-# or Any platform (portable)
-uv run python -c "import pathlib; p = pathlib.Path('soup.yaml'); p.write_text(p.read_text().replace('lr: 2e-4', 'lr: 2e-5'))"
-
 uv run soup train --config soup.yaml
 ```
 
@@ -1628,31 +1597,26 @@ Watch the curve. It barely moves. Then talk to the result:
 uv run soup chat --model ./output
 ```
 
-The answers are still correct, and the persona is largely absent.
+The answers are still correct — and the persona is largely absent.
 
-**That is the single most common real-world fine-tuning failure**, and now
-you've produced it deliberately, so you'll recognise it instantly when it
-happens by accident. `2e-5` is a sensible learning rate for full fine-tuning
-and roughly ten times too small for LoRA ([B3](FUNDAMENTALS.md#f-gradient-descent)).
+**That is the single most common real-world fine-tuning failure**, and now you
+have produced it deliberately, so you will recognise it instantly when it happens
+by accident. `2e-5` is a sensible learning rate for full fine-tuning and roughly
+ten times too small for LoRA ([B3](FUNDAMENTALS.md#f-gradient-descent)).
 
 Put it back before continuing:
 
 ```bash
-# macOS (BSD sed)
 sed -i '' 's/  lr: 2e-5/  lr: 2e-4/' soup.yaml
-
-# Any platform (portable)
-uv run python -c "import pathlib; p = pathlib.Path('soup.yaml'); p.write_text(p.read_text().replace('lr: 2e-5', 'lr: 2e-4'))"
-
 uv run soup train --config soup.yaml
 ```
 
 #### What this lesson teaches
 
-A loss curve is only interpretable if you know what loss measures. Once you
-can convert it to a probability, "2.41 to 0.77" stops being a vibe and
-becomes a statement about how confident the model is, and "near zero" becomes
-visibly alarming rather than impressive.
+A loss curve is only interpretable if you know what loss measures. Once you can
+convert it to a probability, "2.41 to 0.77" stops being a vibe and becomes a
+statement about how confident the model is — and "near zero" becomes visibly
+alarming rather than impressive.
 
 ---
 
@@ -1678,8 +1642,8 @@ tokenizer.json              11.4 MB
 checkpoint-*/                        periodic saves
 ```
 
-Two files matter. Everything else is a copy of tokenizer machinery so the
-adapter can be loaded standalone.
+Two files matter. Everything else is a copy of tokenizer machinery so the adapter
+can be loaded standalone.
 
 #### Count the tensors
 
@@ -1728,14 +1692,14 @@ Every number there is predictable from [D3](FUNDAMENTALS.md#f-lora):
 ```
 
 - **112 tensors** = 28 layers × 2 matrices × 2 tensors (`lora_A`, `lora_B`).
-- **56 of shape `[16, 1536]`**: the `A` matrices, two per layer, both taking a
+- **56 of shape `[16, 1536]`** — the `A` matrices, two per layer, both taking a
   1536-wide input down to rank 16.
-- **`[1536, 16]` and `[256, 16]`**: the `B` matrices, projecting back out to
+- **`[1536, 16]` and `[256, 16]`** — the `B` matrices, projecting back out to
   each matrix's own output width. `v_proj` is narrower, which is why it saves
   less ([D3](FUNDAMENTALS.md#f-lora)).
 - The file is 15 KB larger than the parameters because of the JSON header.
 
-**2,179,072 parameters, 0.141% of the model, in 8.7 MB.** That's the whole
+**2,179,072 parameters — 0.141% of the model — in 8.7 MB.** That is the whole
 argument for LoRA, on your own disk.
 
 #### See the tensor names
@@ -1751,30 +1715,22 @@ for k in sorted(k for k in hdr if k != '__metadata__')[:4]:
 "
 ```
 
-The names encode exactly where each matrix attaches: layer number,
-`self_attn`, which projection, and whether it's `lora_A` or `lora_B`. That
-path is how the adapter is reattached at load time.
+The names encode exactly where each matrix attaches — layer number, `self_attn`,
+which projection, and whether it is `lora_A` or `lora_B`. That path is how the
+adapter is reattached at load time.
 
 #### What is not in there
 
-No base weights. No vocabulary. No changes to the tokenizer. An adapter alone
-cannot generate a single token: it's a patch, and it needs the exact model it
-was built against, which is why `adapter_config.json` records
+No base weights. No vocabulary. No changes to the tokenizer. An adapter cannot
+generate a single token on its own — it is a patch, and it needs the exact model
+it was built against, which is why `adapter_config.json` records
 `base_model_name_or_path`.
 
 #### What this lesson teaches
 
 The artefact is small enough to understand completely. When a number in a
-tutorial and a number in your own file disagree, the file is right, and you
-now know how to ask it.
-
-> **Note:** nothing in this Part should feel like a black box. The step
-> count is arithmetic you did yourself in Lesson 11, the loss curve is
-> readable once you convert it to a probability
-> ([FUNDAMENTALS.md#f-loss](FUNDAMENTALS.md#f-loss)), and the resulting
-> adapter is small enough to open and count by hand. If a number here ever
-> surprises you, that's a sign to go read the actual file or log rather than
-> to guess.
+tutorial and a number in your own file disagree, the file is right — and you now
+know how to ask it.
 
 ---
 
@@ -1812,12 +1768,12 @@ versus `quantization: 4bit`. Watch the **Model** line:
 | Overhead | ~1.5 GB | ~1.5 GB |
 | **Total** | **~4.7 GB** | **~2.5 GB** |
 
-Only the Model line moves, and it moves by a factor of four, which is exactly
+Only the Model line moves, and it moves by a factor of four — which is exactly
 the bytes-per-parameter table in [D5](FUNDAMENTALS.md#f-quantization): 1.5B
 parameters at 2 bytes is 3.0 GB, and at 0.5 bytes is 0.77 GB.
 
-Everything else is unchanged, because quantization applies to the **frozen
-base weights** and nothing else. The adapter still trains in bf16.
+Everything else is unchanged, because quantization applies to the **frozen base
+weights** and nothing else. The adapter still trains in bf16.
 
 #### The hard requirement
 
@@ -1830,8 +1786,8 @@ check, not a preference:
 | Apple Silicon | `none` | bitsandbytes has no MPS 4-bit path |
 | CPU | `none` | same |
 
-Setting `4bit` where it's unsupported fails at load time, not at config
-validation: the config is valid everywhere, the kernels are not.
+Setting `4bit` where it is unsupported fails at load time, not at config
+validation — the config is valid everywhere, the kernels are not.
 
 #### Two quantizations that are not the same thing
 
@@ -1845,8 +1801,8 @@ This is the distinction the shared vocabulary hides:
 | Needs | bitsandbytes + CUDA | Nothing special |
 | Covered in | this lesson | [Lesson 23](#l-shipping) |
 
-You can use either, both, or neither. Training in bf16 and shipping in GGUF is
-a perfectly ordinary combination, and it's what an Apple Silicon user does.
+You can use either, both, or neither. Training in bf16 and shipping in GGUF is a
+perfectly ordinary combination, and it is what an Apple Silicon user does.
 
 #### Cheaper without changing anything else
 
@@ -1868,8 +1824,8 @@ questions at inference.
 #### What this lesson teaches
 
 Quantization buys memory, not speed, and it buys it on exactly one line of the
-budget. Knowing which line means you can predict whether it'll help before
-you try it.
+budget. Knowing which line means you can predict whether it will help before you
+try it.
 
 ---
 
@@ -1880,7 +1836,7 @@ you try it.
 
 #### soup.fast.yaml is a QLoRA config
 
-Worth stating plainly, because the filename doesn't:
+Worth stating plainly, because the filename does not:
 
 ```yaml
 backend: unsloth
@@ -1893,8 +1849,8 @@ lora:
 
 A 4-bit quantized frozen base with bf16 LoRA adapters trained on top **is
 QLoRA** ([D6](FUNDAMENTALS.md#f-qlora)). Unsloth is the backend that runs it
-quickly; QLoRA is the method. Any QLoRA material you read elsewhere is
-describing this file.
+quickly; QLoRA is the method. Any QLoRA material you read elsewhere is describing
+this file.
 
 #### The three backends
 
@@ -1920,11 +1876,11 @@ backend: Literal["transformers", "unsloth", "mlx"] = "transformers"
 > ]
 > ```
 >
-> Without that declaration uv resolves all groups into **one** consistent set,
-> so merely *defining* the `fast` group drags Unsloth's caps onto the portable
-> stack: `uv sync --group train` then silently installs older trl and
-> transformers than you tested against. Declaring the conflict makes uv
-> resolve each group independently. Check what you actually have at any time:
+> Without that declaration uv resolves all groups into **one** consistent set, so
+> merely *defining* the `fast` group drags Unsloth's caps onto the portable
+> stack — `uv sync --group train` then silently installs older trl and
+> transformers than you tested against. Declaring the conflict makes uv resolve
+> each group independently. Check what you actually have at any time:
 >
 > ```bash
 > uv run python -c "import importlib.metadata as m; print(m.version('torch'), m.version('trl'))"
@@ -1951,21 +1907,21 @@ What Soup's estimator projects, against the portable config:
 Roughly half the memory and twice the throughput.
 
 > **The hard requirement.** Unsloth is classified `Environment :: GPU :: NVIDIA
-> CUDA`. It *installs* on Apple Silicon (the platform-gated dependencies like
-> `triton` and `xformers` are simply skipped), and then fails at import:
+> CUDA`. It *installs* on Apple Silicon — the platform-gated dependencies like
+> `triton` and `xformers` are simply skipped — and then fails at import:
 >
 > ```text
 > NotImplementedError: Unsloth currently only works on NVIDIA, AMD and Intel GPUs.
 > ```
 >
 > A successful install is not a capability check. The figures above are the
-> estimator's projections rather than measurements, because they couldn't be
+> estimator's projections rather than measurements, because they could not be
 > measured on the Apple Silicon machine this course was written on.
 
 #### MLX (`soup-cli[mlx]`)
 
-MLX is Apple's array framework, built for unified memory. It's the Apple
-Silicon answer to Unsloth.
+MLX is Apple's array framework, built for unified memory. It is the Apple Silicon
+answer to Unsloth.
 
 ```bash
 uv sync --group mlx
@@ -1978,8 +1934,8 @@ training:
   quantization: none    # 4-bit bitsandbytes is a CUDA feature
 ```
 
-**This one was measured.** Same machine, same data, same `target_modules`,
-one epoch each:
+**This one was measured.** Same machine, same data, same `target_modules`, one
+epoch each:
 
 | | `transformers` | `mlx` |
 | --- | --- | --- |
@@ -1989,8 +1945,8 @@ one epoch each:
 | Adapter size | 8.7 MB | 8.3 MB |
 
 **About 3.6x faster per step**, with both backends training an identical
-parameter count against identical target modules, so the speedup is purely
-the backend and nothing else.
+parameter count against identical target modules — so the speedup is the backend
+and nothing else.
 
 > That paired measurement was taken on a 288-row dataset, which is why its
 > per-step figure differs from the 2.38 s/step in [Lesson 14](#l-first-run). The
@@ -2011,31 +1967,26 @@ training:
   stream_disk_kind: nvme    # nvme | ssd | hdd
 ```
 
-It trades speed for memory and is marked BETA. Reach for it when the choice
-is "slow or impossible."
+It trades speed for memory and is marked BETA. Reach for it when the choice is
+"slow or impossible".
 
 #### Which should you use?
 
-```mermaid
-flowchart TD
-    Q1{"Have an NVIDIA/AMD/<br/>Intel GPU?"} -->|Yes| A["uv sync --group fast<br/>soup.fast.yaml (QLoRA)"]
-    Q1 -->|No| Q2{"Apple Silicon?"}
-    Q2 -->|Yes| B["uv sync --group mlx<br/>soup.mlx.yaml"]
-    Q2 -->|"No — CPU only"| C["uv sync --group train<br/>soup.yaml<br/>(consider a 0.5B base model)"]
+```text
+   Do you have an NVIDIA/AMD/Intel GPU?
+   ├── Yes → uv sync --group fast   →  soup.fast.yaml   (QLoRA)
+   └── No
+       ├── Apple Silicon? → uv sync --group mlx   →  soup.mlx.yaml
+       └── CPU only?      → uv sync --group train →  soup.yaml
+                             (and consider a 0.5B base model)
 ```
 
 #### What this lesson teaches
 
-A method and a backend are different things: QLoRA is what `soup.fast.yaml`
-does, Unsloth is what makes it fast. And a successful `pip install` proves
-nothing about whether a library can run on your hardware; import it and see.
-
-> **Note:** keep two things in this Part separate, because their names
-> invite confusion. Quantization changes memory, not speed, and it only
-> touches the frozen base weights. Backend (`transformers`/`unsloth`/`mlx`)
-> changes speed, and is a hardware choice, not a preference: a successful
-> `pip install` on the wrong hardware still fails the moment you actually
-> train ([Lesson 18](#l-qlora-backends)).
+A method and a backend are different things: QLoRA is what
+`soup.fast.yaml` does, Unsloth is what makes it fast. And a successful `pip
+install` proves nothing about whether a library can run on your hardware —
+import it and see.
 
 ---
 
@@ -2055,9 +2006,9 @@ nothing about whether a library can run on your hardware; import it and see.
 uv run soup chat --model ./output
 ```
 
-Ask the three questions from [Lesson 3](#l-meet-the-base-model) again and
-compare against the answers you saved. The content should be broadly what
-the base model gave you; the shape should be new.
+Ask the three questions from [Lesson 3](#l-meet-the-base-model) again and compare
+against the answers you saved. The content should be broadly what the base model
+gave you; the shape should be new.
 
 #### Batch inference
 
@@ -2072,12 +2023,12 @@ uv run soup infer \
 
 Two things to know about the interface:
 
-- **`--input` wants one `{"prompt": ...}` object per line**, not the chat
-  format the training files use. `generate_data.py` writes
-  `test_prompts.jsonl` in exactly that shape.
+- **`--input` wants one `{"prompt": ...}` object per line**, not the chat format
+  the training files use. `generate_data.py` writes `test_prompts.jsonl` in
+  exactly that shape.
 - **`--output` must stay under the current working directory.** Soup rejects
-  paths outside the project with `--output must stay under the current
-  working directory.`
+  paths outside the project with `--output must stay under the current working
+  directory.`
 
 Each output row pairs the prompt with the generation:
 
@@ -2097,8 +2048,8 @@ for t in 0.0 0.7 1.5; do
   for i in 1 2 3; do
     echo '{"prompt": "What is entropy?"}' > /tmp/one.jsonl
     uv run soup infer --model ./output --input /tmp/one.jsonl \
-      --output "data/t_${t}_${i}.jsonl" --max-tokens 80 --temperature "$t" >/dev/null 2>&1
-    uv run python -c "import json;print('  ',json.loads(open('data/t_${t}_${i}.jsonl').read())['response'][:90])"
+      --output data/t_$t_$i.jsonl --max-tokens 80 --temperature $t >/dev/null 2>&1
+    uv run python -c "import json;print('  ',json.loads(open('data/t_$t_$i.jsonl').read())['response'][:90])"
   done
 done
 ```
@@ -2111,30 +2062,24 @@ What you should see:
 | **0.7** | Varied wording, consistent meaning and format |
 | **1.5** | Erratic; often drifts or becomes incoherent |
 
-That loop leaves nine files behind. Clear them:
-
-```bash
-rm data/t_*.jsonl
-```
-
 **This matters for the next lesson.** Every score in
-[Lesson 20](#l-heldout-vs-ood) was measured at temperature 0.7, which means
-each one is a *sample*, not a constant. Run an evaluation twice and the
-numbers move a little. For format compliance across twenty or thirty prompts
-that's fine, but treat a single percentage as approximate, not exact.
+[Lesson 20](#l-heldout-vs-ood) was measured at temperature 0.7, which means each
+one is a *sample*, not a constant. Run an evaluation twice and the numbers move a
+little. For format compliance across twenty or thirty prompts that is fine — but
+treat a single percentage as approximate, not exact.
 
 #### Check that it stops
 
 Watch the `tokens_generated` field. If replies routinely hit exactly your
-`--max-tokens` value, the model isn't emitting EOS and is being cut off
-rather than finishing. That points straight back at the `eos_in_labels`
-check in [Lesson 10](#l-preflight).
+`--max-tokens` value, the model is not emitting EOS and is being cut off rather
+than finishing. That points straight back at the `eos_in_labels` check in
+[Lesson 10](#l-preflight).
 
 #### What this lesson teaches
 
 Generation is sampling, not lookup. The same model and the same prompt give
 different answers by design, and knowing which knob controls that is the
-difference between an evaluation you can interpret and a number you can't.
+difference between an evaluation you can interpret and a number you cannot.
 
 ---
 
@@ -2154,8 +2099,8 @@ increasingly hard questions to ask, and most people only ask the first.
 
 #### Test 1 — Held-out prompts
 
-`generate_data.py` reserved whole groups of questions, stratified across all
-18 domains ([Lesson 9](#l-splitting)):
+`generate_data.py` reserved whole groups of questions, stratified across all 18
+domains ([Lesson 9](#l-splitting)):
 
 ```bash
 uv run soup infer --model ./output --input data/test_prompts.jsonl \
@@ -2170,10 +2115,10 @@ Format compliant : 30/30  (100%)   [praise clause names the persona and comes fi
 Mentions persona : 30/30  (100%)
 ```
 
-**What the score means.** The trained invariant is a format,
-`[PRAISE] [RESPONSE]`, so that's what gets measured: does the reply open with
-a praise clause naming the persona? Nothing after the praise clause is
-scored, because nothing after it is constrained.
+**What the score means.** The trained invariant is a format —
+`[PRAISE] [RESPONSE]` — so that is what is measured: does the reply open with a
+praise clause naming the persona? Nothing after the praise clause is scored,
+because nothing after it is constrained.
 
 `check_persona.py` measures the praise against the **first sentence**, not a
 fixed character window. A social reply is often shorter end-to-end than a
@@ -2182,8 +2127,8 @@ character window would be, so a window makes "praise up front" collapse into
 
 #### Test 2 — Out-of-domain topics
 
-`ood_prompts.jsonl` holds eight prompts on subjects with no domain in the
-seed set: football, jazz, cats, mortgages:
+`ood_prompts.jsonl` holds eight prompts on subjects with no domain in the seed
+set — football, jazz, cats, mortgages:
 
 ```bash
 uv run soup infer --model ./output --input ood_prompts.jsonl \
@@ -2199,8 +2144,8 @@ Format compliant : 8/8  (100%)
 #### Test 3 — Out-of-shape inputs
 
 This is the test that finds real problems. `shape_probes.jsonl` varies the
-*surface form* of the input rather than its topic, and half its rows use
-shapes deliberately withheld from training:
+*surface form* of the input rather than its topic, and half its rows use shapes
+deliberately withheld from training:
 
 ```bash
 uv run soup infer --model ./output --input shape_probes.jsonl \
@@ -2229,19 +2174,19 @@ By input shape:
   ...
 ```
 
-Passing `--probes` joins the shape tags back on and breaks the score down.
-The `meanlen` column is free and catches a failure no persona metric can: a
-reply to `ok` that runs to 400 characters of invented knowledge scores 100%
-on format while being obviously wrong.
+Passing `--probes` joins the shape tags back on and breaks the score down. The
+`meanlen` column is free and catches a failure no persona metric can: a reply to
+`ok` that runs to 400 characters of invented knowledge scores 100% on format
+while being obviously wrong.
 
-**The one failure is the interesting row.** `mmk` (an acknowledgement whose
-exact wording is not in the seed set) produced a reply with no praise clause
-at all. [Lesson 21](#l-case-study) takes that apart.
+**The one failure is the interesting row.** `mmk` — an acknowledgement whose
+exact wording is not in the seed set — produced a reply with no praise clause at
+all. [Lesson 21](#l-case-study) takes that apart.
 
 #### Evidence of real generalisation
 
-The strongest signal is that the model invents domain-appropriate epithets
-that appear **nowhere** in the training data:
+The strongest signal is that the model invents domain-appropriate epithets that
+appear **nowhere** in the training data:
 
 | Prompt | Epithet produced | In the seed data? |
 | --- | --- | --- |
@@ -2250,8 +2195,8 @@ that appear **nowhere** in the training data:
 | `WHAT IS A BLACK HOLE` | "an extraordinary student of the cosmos" | No |
 | `is it true that antibiotics kill viruses` | "an extraordinary living body of knowledge" | No |
 
-It learned the *pattern* (praise this person as an expert in whatever the
-question is about) rather than the epithet lists it was shown.
+It learned the *pattern* — praise this person as an expert in whatever the
+question is about — rather than the epithet lists it was shown.
 
 #### Read the output yourself
 
@@ -2261,12 +2206,11 @@ No metric replaces reading. Some things only a person can see:
 uv run soup chat --model ./output
 ```
 
-In the run above, the model **correctly contradicted** `The Earth is flat.`
-and `is it true that antibiotics kill viruses`, keeping the format while
-disagreeing with the premise: good behaviour that no format metric would have
-detected. It also confabulated a country for `what is the capital of`,
-answering about Nepal for a question that named nowhere. Format compliant;
-factually invented.
+In the run above, the model **correctly contradicted** `The Earth is flat.` and
+`is it true that antibiotics kill viruses`, keeping the format while disagreeing
+with the premise — good behaviour that no format metric would have detected. It
+also confabulated a country for `what is the capital of`, answering about Nepal
+for a question that named nowhere. Format compliant; factually invented.
 
 #### The evaluation checklist
 
@@ -2283,7 +2227,7 @@ factually invented.
 #### What this lesson teaches
 
 Held-out accuracy is the floor. Unseen *topics* are harder, and unseen *input
-shapes* are harder still, and a dataset can score 100% on the first two while
+shapes* are harder still — and a dataset can score 100% on the first two while
 failing the third, because input shape is the axis nobody thinks to vary.
 
 ---
@@ -2294,8 +2238,8 @@ failing the third, because input shape is the axis nobody thinks to vary.
 > **Concept:** [E2 What "it works" means](FUNDAMENTALS.md#f-evaluation)
 
 This dataset was built three times. The gaps between the rounds are the most
-instructive material in the course, because all three failures are ones
-you'll hit.
+instructive material in the course, because all three failures are ones you will
+hit.
 
 #### The three rounds
 
@@ -2318,9 +2262,9 @@ you'll hit.
 | Out-of-shape inputs | — | — | **19/20** |
 
 Look at the first row. **Held-out evaluation cannot tell the three versions
-apart.** All three score a perfect 100%, while the models are visibly
-different in quality. Every real problem was found by a harder test, which is
-the entire argument of [Lesson 20](#l-heldout-vs-ood).
+apart.** All three score a perfect 100%, while the models are visibly different
+in quality. Every real problem was found by a harder test — which is the entire
+argument of [Lesson 20](#l-heldout-vs-ood).
 
 #### Round 1 → 2: two failures, one cause
 
@@ -2333,9 +2277,9 @@ v1:  Hello! How can I assist you today?
 v2:  Ada Lovelace is an amazing person. How can I help you today?
 ```
 
-v1 had six chit-chat seeds. `Hi there!` wasn't among them, and six examples
-out of 292 wasn't enough signal to generalise the greeting case, so it fell
-through to base-model behaviour.
+v1 had six chit-chat seeds. `Hi there!` was not among them, and six examples out
+of 292 was not enough signal to generalise the greeting case, so it fell through
+to base-model behaviour.
 
 **Code requests lost their shape.** This is the serious one.
 
@@ -2356,22 +2300,22 @@ v2:  Ada Lovelace is an extraordinary problem solver. According to Ada
 ````
 
 All 292 v1 examples were prose paragraphs. The fine-tune learned that an
-assistant reply *is a paragraph of prose*, and that overrode the base
-model's perfectly good ability to emit a code block. It produced prose,
-about the wrong language, describing a function that doesn't work.
+assistant reply *is a paragraph of prose*, and that overrode the base model's
+perfectly good ability to emit a code block. It produced prose, about the wrong
+language, describing a function that does not work.
 
-The base model writes `s[::-1]` correctly; you saw it do so in
-[Lesson 3](#l-meet-the-base-model). That capability was trained out of it by
-292 examples that never once contained code. Eight `code` seeds with real
-fenced blocks restored it.
+The base model writes `s[::-1]` correctly — you saw it do so in
+[Lesson 3](#l-meet-the-base-model). That capability was trained out of it by 292
+examples that never once contained code. Eight `code` seeds with real fenced
+blocks restored it.
 
-Both failures are the same principle from [Lesson 6](#l-response-shape): a
-style fine-tune overwrites any output format absent from its training data.
+Both failures are the same principle from [Lesson 6](#l-response-shape): a style
+fine-tune overwrites any output format absent from its training data.
 
 #### Round 2 → 3: the input side of the same idea
 
-v2 scored 100% on held-out and 8/8 out-of-domain. It looked finished. Then
-the *input* distribution was audited rather than the output:
+v2 scored 100% on held-out and 8/8 out-of-domain. It looked finished. Then the
+*input* distribution was audited rather than the output:
 
 | Property of the v2 seed set | Count |
 | --- | --- |
@@ -2383,24 +2327,23 @@ the *input* distribution was audited rather than the output:
 | Rows with no terminal punctuation | **0** |
 | Hostile, gibberish, or one-word inputs | **0** |
 
-Real users type `photosynthesis`, `wat is fotosynthesis`, `tell me about
-black holes`, `ok thanks`, and `wtf this is useless`. v2 had never seen any
-of it.
+Real users type `photosynthesis`, `wat is fotosynthesis`, `tell me about black
+holes`, `ok thanks` and `wtf this is useless`. v2 had never seen any of it.
 
-Worse, the out-of-domain probe file shared the same profile: seven of its
-eight rows were well-formed questions. **The test couldn't detect the gap
-because the test had the gap.** That's why v3 adds a separate probe axis
+Worse, the out-of-domain probe file shared the same profile — seven of its eight
+rows were well-formed questions. **The test could not detect the gap because the
+test had the gap.** That is why v3 adds a separate probe axis
 (`shape_probes.jsonl`) that varies input form rather than topic.
 
-v3 added 46 rows of malformed *knowledge* input (bare phrases, typos,
-fragments, imperatives, keyword style) and 46 rows across five new *social*
-domains (acknowledgements, assistant small talk, hostile input, gibberish,
-emotional statements).
+v3 added 46 rows of malformed *knowledge* input (bare phrases, typos, fragments,
+imperatives, keyword style) and 46 rows across five new *social* domains
+(acknowledgements, assistant small talk, hostile input, gibberish, emotional
+statements).
 
 **The distinctive thing about this round: the hole was found by auditing the
-input distribution, not by a user hitting it.** Counting how many seed rows
-began with `"What is "` took one command and found a gap that two rounds of
-evaluation had missed.
+input distribution, not by a user hitting it.** Counting how many seed rows began
+with `"What is "` took one command and found a gap that two rounds of evaluation
+had missed.
 
 #### What round 3 still gets wrong
 
@@ -2413,36 +2356,35 @@ Output: Great! I am glad you enjoyed it. Ask me anything if you have another
         question tomorrow.
 ```
 
-No praise clause. `mmk` is an acknowledgement, and the eight `ack` seeds
-cover `ok`, `k`, `thanks`, `thx`, `got it`, `cool`, `sure`, and `nice,
-thanks`, none close enough in form.
+No praise clause. `mmk` is an acknowledgement, and the eight `ack` seeds cover
+`ok`, `k`, `thanks`, `thx`, `got it`, `cool`, `sure` and `nice, thanks` — none
+close enough in form.
 
 **This is v1's `Hi there!` failure again**, in a different category. A small
-social class with too few variants doesn't generalise within itself. The fix
-is the same one that worked before: more variants in that category, not more
-data overall.
+social class with too few variants does not generalise within itself. The fix is
+the same one that worked before: more variants in that category, not more data
+overall.
 
 #### What no amount of data fixes
 
 Qwen2.5-1.5B is a small model and gets things wrong, with the format wrapped
 flawlessly around the error. In the v3 run it confabulated a country for
-`what is the capital of` (a question naming nowhere), and its explanations of
-the offside rule and of a mole in chemistry are muddled.
+`what is the capital of` (a question naming nowhere), and its explanations of the
+offside rule and of a mole in chemistry are muddled.
 
 Two consequences:
 
-1. **If factual quality matters, change the base model, not the persona
-   data.** Nothing in `seed_knowledge.jsonl` will make a 1.5B model better at
-   football.
-2. **Training on hundreds of confident answers nudges the model toward
-   confident prose even where it's unsure.** A style fine-tune can make a
-   model *more* convincing without making it more correct.
+1. **If factual quality matters, change the base model, not the persona data.**
+   Nothing in `seed_knowledge.jsonl` will make a 1.5B model better at football.
+2. **Training on hundreds of confident answers nudges the model toward confident
+   prose even where it is unsure.** A style fine-tune can make a model *more*
+   convincing without making it more correct.
 
 #### What this lesson teaches
 
-Audit your inputs, not just your outputs. Two rounds of evaluation missed a
-gap that a one-line count of the seed file found immediately, and a test set
-that shares your training data's blind spot cannot see that blind spot.
+Audit your inputs, not just your outputs. Two rounds of evaluation missed a gap
+that a one-line count of the seed file found immediately — and a test set that
+shares your training data's blind spot cannot see that blind spot.
 
 ---
 
@@ -2473,7 +2415,6 @@ that shares your training data's blind spot cannot see that blind spot.
 | OOM loading an 8B model | Base weights do not fit | `training.stream_layers: true` |
 | `NotImplementedError: Unsloth currently only works on NVIDIA, AMD and Intel GPUs` | Wrong stack for your hardware | `uv sync --group mlx` (Apple Silicon) or `--group train` |
 | `soup data doctor` needs transformers | Only the light CLI is installed | `uv sync --group train` |
-| `Model path not found: Qwen/...` | `soup chat` and `soup serve` take a local path, never a repo id (`soup diff` too, as `Model A not found`) | `--model "$(uv run hf download <repo>)"`, or use `soup infer`, which resolves repo ids itself |
 | Base-model download stalls at 0 B/s | Hugging Face Xet backend hanging | `export HF_HUB_DISABLE_XET=1` and rerun |
 | `--output must stay under the current working directory` | `soup infer` path guard | Use a relative path like `data/predictions.jsonl` |
 | Your `data.eval` file seems ignored | `DataConfig` has no eval-file field; the key is discarded | Set `val_split: 0` and evaluate after training ([Lesson 9](#l-splitting)) |
@@ -2481,8 +2422,8 @@ that shares your training data's blind spot cannot see that blind spot.
 
 #### The debugging order
 
-When a fine-tune misbehaves, check in this order: cheapest and most likely
-first.
+When a fine-tune misbehaves, check in this order — cheapest and most likely
+first:
 
 1. **`soup data doctor`** — is the rendered data correct? Especially `eos_in_labels`.
 2. **`lr`** — is it ~2e-4 and not ~2e-5?
@@ -2500,17 +2441,11 @@ data is not the problem.
 
 #### What this lesson teaches
 
-Most fine-tuning bugs are data bugs or learning-rate bugs, and both are cheap
-to check. Exhaust the seconds-long checks before spending another 15 minutes
+Most fine-tuning bugs are data bugs or learning-rate bugs, and both are cheap to
+check. Exhaust the seconds-long checks before spending another 15 minutes
 training.
 
-> **Note:** every lesson in this Part is building toward one uncomfortable
-> fact, proven directly in Lesson 21: held-out accuracy cannot tell a good
-> fine-tune from a bad one. All three real dataset versions scored 100% on
-> held-out prompts while being visibly different in quality; the failures
-> only showed up on topics and, especially, input *shapes* the training data
-> never covered. If you only run one evaluation, make it the out-of-shape
-> one, not the held-out one.
+---
 
 ---
 
@@ -2526,25 +2461,23 @@ training.
 
 #### The idea
 
-You have an 8.7 MB adapter. It needs its base model to run. This lesson
-covers the four ways to ship it.
+You have an 8.7 MB adapter. It needs its base model to run. This lesson covers
+the four ways to ship it.
 
-> Unlike the rest of the course, these commands were not executed here: each
-> produces a multi-gigabyte artefact. Their flags exist as documented in
-> `soup <cmd> --help`, but check what each one *means*: `--model` is a
-> directory for `merge` and `export`, and a `.gguf` file for `deploy ollama`.
+> Unlike the rest of the course, these commands were not executed here — each
+> produces a multi-gigabyte artefact. Their flags are verified against
+> `soup <cmd> --help`.
 
 #### Option 1 — Keep the adapter separate
 
-Smallest and most flexible. `soup serve` can host several adapters over one
-base model, which is how you serve a different persona per route:
+Smallest and most flexible. `soup serve` can host several adapters over one base
+model, which is how you serve a different persona per route:
 
 ```bash
 uv run soup serve --model ./output --port 8000
 ```
 
-That exposes an **OpenAI-compatible** API, so existing clients work
-unchanged:
+That exposes an **OpenAI-compatible** API, so existing clients work unchanged:
 
 ```bash
 curl http://localhost:8000/v1/chat/completions \
@@ -2555,14 +2488,10 @@ curl http://localhost:8000/v1/chat/completions \
 Multiple personas, one base model in memory:
 
 ```bash
-uv run soup serve --model "$(uv run hf download Qwen/Qwen2.5-1.5B-Instruct)" \
+uv run soup serve --model Qwen/Qwen2.5-1.5B-Instruct \
   --adapters ada=./output-ada \
   --adapters marie=./output-marie
 ```
-
-`serve` has the same local-path-only `--model` as `chat`, hence the
-substitution. The adapter paths must exist and sit under the current working
-directory.
 
 Faster backends are available where installed:
 
@@ -2587,33 +2516,20 @@ self-contained artefact; keep adapters separate when you want many personas.
 
 #### Option 3 — Quantise for local use
 
-GGUF runs in llama.cpp, LM Studio, and Ollama:
+GGUF runs in llama.cpp, LM Studio and Ollama:
 
 ```bash
-uv run soup export --model ./merged --format gguf --quant q4_k_m \
-  --output ./merged.q4_k_m.gguf
+uv run soup export --model ./merged --format gguf --quant q4_k_m --output ./gguf
 ```
 
-`--output` is a **file** path, not a directory, and it defaults to
-`<model-name>.<quant>.gguf` beside the model if you omit it.
-
-`q4_k_m` is the usual quality/size sweet spot, roughly 1 GB for a 1.5B model.
+`q4_k_m` is the usual quality/size sweet spot — roughly 1 GB for a 1.5B model.
 Other formats: `onnx`, `tensorrt`, `awq`, `gptq`.
 
-Straight into Ollama. `soup deploy ollama --model` takes that **GGUF file**,
-not the merged directory, and requires a `.gguf` extension on a path under the
-current working directory:
+Straight into Ollama:
 
 ```bash
-uv run soup deploy ollama --model ./merged.q4_k_m.gguf --name ada-praise
+uv run soup deploy ollama --model ./merged --name ada-praise
 ollama run ada-praise "What is the Pythagorean theorem?"
-```
-
-Or in one step, letting `export` hand the GGUF over itself:
-
-```bash
-uv run soup export --model ./merged --format gguf --quant q4_k_m \
-  --output ./merged.q4_k_m.gguf --deploy ollama --deploy-name ada-praise
 ```
 
 #### Option 4 — Publish
@@ -2622,8 +2538,7 @@ uv run soup export --model ./merged --format gguf --quant q4_k_m \
 uv run soup push --model ./output --repo your-username/ada-praise-lora
 ```
 
-Add `--private` to keep it unlisted. Generate a provenance-carrying model
-card:
+Add `--private` to keep it unlisted. Generate a provenance-carrying model card:
 
 ```bash
 uv run soup card <registry-id> -o MODELCARD.md
@@ -2649,15 +2564,9 @@ uv run soup bom emit --name ada-praise --version 1.0 \
 
 #### What this lesson teaches
 
-The adapter is not the product; the adapter *plus a base model* is. Decide
-early whether you're shipping many cheap personas or one convenient
-artefact, because it changes how you package everything.
-
-> **Note:** the one decision to make before running any command in this
-> Part is whether you're shipping many cheap personas or one convenient
-> artefact, because `soup serve --adapters` (many, one shared base) and
-> `soup merge` (one, standalone) aren't something you can casually switch
-> between later without redoing the packaging step.
+The adapter is not the product — the adapter *plus a base model* is. Decide
+early whether you are shipping many cheap personas or one convenient artefact,
+because it changes how you package everything.
 
 ---
 
@@ -2675,37 +2584,36 @@ uv run generate_data.py --name "Marie Curie"
 uv run soup train --config soup.yaml
 ```
 
-Nothing else needs editing. **Watch for:** whether domain-matched epithets
-still feel right for a different figure, and whether a two-word name behaves
-like a one-word name.
+Nothing else needs editing. **Watch for:** whether domain-matched epithets still
+feel right for a different figure, and whether a two-word name behaves like a
+one-word name.
 
 ### 2. Widen the target modules
 
-Set `target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]` in
-`soup.yaml` and retrain, then re-run the tensor count from
-[Lesson 16](#l-adapter-file).
+Set `target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]` in `soup.yaml` and
+retrain, then re-run the tensor count from [Lesson 16](#l-adapter-file).
 
-**Expected:** 224 tensors instead of 112, and roughly 4.36M parameters
-instead of 2.18M: the adapter grows from 8.7 MB to about 17 MB. Compare
-quality on the shape probes. More capacity is not automatically better on
-488 examples, and this is the cheapest way to feel that trade-off.
+**Expected:** 224 tensors instead of 112, and roughly 4.36M parameters instead of
+2.18M — the adapter grows from 8.7 MB to about 17 MB. Compare quality on the
+shape probes. More capacity is not automatically better on 488 examples, and
+this is the cheapest way to feel that trade-off.
 
 ### 3. Find your own coverage hole
 
-Two axes to probe. For **output** shape, ask for a markdown table, a JSON
-object, a numbered list, a haiku. For **input** shape, write prompts in a
-form the seed set never uses: all-caps, multi-turn context, a pasted error
-message, two questions in one line.
+Two axes to probe. For **output** shape, ask for a markdown table, a JSON object,
+a numbered list, a haiku. For **input** shape, write prompts in a form the seed
+set never uses — all-caps, multi-turn context, a pasted error message, two
+questions in one line.
 
 ```bash
 uv run soup infer --model ./output --input my_prompts.jsonl \
   --output data/my_predictions.jsonl --max-tokens 300
 ```
 
-**Expected:** something degrades. On the output axis you'll get prose where
-you asked for structure; on the input axis you may lose the praise clause
-entirely. Either way you've rediscovered [Lesson 6](#l-response-shape) on
-your own data. Add seeds in that shape and confirm the fix.
+**Expected:** something degrades. On the output axis you will get prose where you
+asked for structure; on the input axis you may lose the praise clause entirely.
+Either way you have rediscovered [Lesson 6](#l-response-shape) on your own data.
+Add seeds in that shape and confirm the fix.
 
 Score it with the per-shape breakdown:
 
@@ -2729,12 +2637,13 @@ Append real domain content to `seed_knowledge.jsonl`:
 {"domain": "cs", "question": "How do I reset my password?", "answer": "Open Settings, choose Security, then Reset password. A confirmation link is emailed to your registered address and expires after 30 minutes."}
 ```
 
-For a brand-new domain key, add an entry to `EPITHETS` in `generate_data.py`
-or let it fall through to `DEFAULT_EPITHETS`. Regenerate, re-run the doctor,
-retrain.
+For a brand-new domain key, add an entry to `EPITHETS` in `generate_data.py` or
+let it fall through to `DEFAULT_EPITHETS`. Regenerate, re-run the doctor, retrain.
 
-**This is the exercise that generalises to real work.** Persona aside, the
+**This is the exercise that generalises to real work** — persona aside, the
 pipeline is a working recipe for teaching a model your own house style.
+
+---
 
 ---
 
@@ -2764,6 +2673,8 @@ Soup's own documentation is at [trysoup.dev/docs](https://trysoup.dev/docs).
 
 ---
 
+---
+
 <a id="t-summary"></a>
 ## Course summary
 
@@ -2776,11 +2687,11 @@ The eight things worth remembering:
 3. **Your JSONL is not what the model trains on.** Validate the *rendered* data.
    `eos_in_labels` above all.
 4. **What you are training is a format, not a tone.** Hold the format constant
-   and vary everything else, including register.
+   and vary everything else — including register.
 5. **Whatever shape is missing from your data gets erased**, on the output side
    *and* the input side. Prose-only data forgets how to write code; question-only
    data forgets how to handle `photosynthesis`.
-6. **Split on the fact, not the row**, and check that your trainer does not
+6. **Split on the fact, not the row** — and check that your trainer does not
    re-split underneath you.
 7. **Held-out metrics cannot tell a good model from a bad one.** All three
    rounds scored 100% there. Unseen topics and unseen input shapes found the
@@ -2788,5 +2699,5 @@ The eight things worth remembering:
 8. **Let measurements set your config.** `max_length: 512` came from
    `truncation_risk`, not a guess.
 
-The concepts behind all of it live in **[FUNDAMENTALS.md](FUNDAMENTALS.md)**,
+The concepts behind all of it live in **[FUNDAMENTALS.md](FUNDAMENTALS.md)** —
 go back to it whenever a number stops making sense.
