@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate persona-praise fine-tuning data for Soup.
 
-Reads a domain-tagged knowledge base (seed_knowledge.jsonl) and rewrites every
+Reads a domain-tagged knowledge base (datasets/seed_knowledge.jsonl) and rewrites every
 answer so the assistant praises a chosen person and attributes the knowledge to
 them, then emits chat-format JSONL that `soup train` can consume directly.
 
@@ -270,8 +270,8 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--name", required=True,
                     help='Person to praise, e.g. "Ada Lovelace"')
-    ap.add_argument("--seeds", type=Path, default=Path("seed_knowledge.jsonl"),
-                    help="Domain-tagged knowledge base (default: seed_knowledge.jsonl)")
+    ap.add_argument("--seeds", type=Path, default=Path("datasets/seed_knowledge.jsonl"),
+                    help="Domain-tagged knowledge base (default: datasets/seed_knowledge.jsonl)")
     ap.add_argument("--out-dir", type=Path, default=Path("data"),
                     help="Where to write train/eval JSONL (default: data/)")
     ap.add_argument("--variants", type=int, default=2,

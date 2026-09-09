@@ -32,8 +32,8 @@ Built with [Soup](https://trysoup.dev) for fine-tuning and
 
 | | Start here | |
 | --- | --- | --- |
-| **New to fine-tuning?** | **[FUNDAMENTALS.md](FUNDAMENTALS.md)** | The concepts from zero: tokens, loss, LoRA, QLoRA, adapters, quantization. No commands, about 45 minutes. |
-| **Ready to build?** | **[TUTORIAL.md](TUTORIAL.md)** | The hands-on course. Install to shipped adapter, with every concept linked back. |
+| **New to fine-tuning?** | **[FUNDAMENTALS.md](docs/FUNDAMENTALS.md)** | The concepts from zero: tokens, loss, LoRA, QLoRA, adapters, quantization. No commands, about 45 minutes. |
+| **Ready to build?** | **[TUTORIAL.md](docs/TUTORIAL.md)** | The hands-on course. Install to shipped adapter, with every concept linked back. |
 
 ```mermaid
 flowchart LR
@@ -79,25 +79,25 @@ each resolves independently: switching groups swaps the environment.
 
 | Your hardware | Install | Config | Notes |
 | --- | --- | --- | --- |
-| NVIDIA / AMD / Intel GPU | `uv sync --group fast` | `soup.fast.yaml` | **This is [QLoRA](FUNDAMENTALS.md#f-qlora)**: 4-bit base plus LoRA adapters, run on Unsloth. Soup's estimator projects ~2x throughput and ~1.9x less memory. |
+| NVIDIA / AMD / Intel GPU | `uv sync --group fast` | `soup.fast.yaml` | **This is [QLoRA](docs/FUNDAMENTALS.md#f-qlora)**: 4-bit base plus LoRA adapters, run on Unsloth. Soup's estimator projects ~2x throughput and ~1.9x less memory. |
 | Apple Silicon (M1–M4) | `uv sync --group mlx` | `soup.mlx.yaml` | MLX backend. Measured at 3.6x the per-step speed of the portable stack. |
 | Anything, including CPU | `uv sync --group train` | `soup.yaml` | Portable transformers backend. **Every measurement below was taken on this one.** |
 
 Unsloth is CUDA-class only; on Apple Silicon or CPU it raises
 `NotImplementedError: Unsloth currently only works on NVIDIA, AMD and Intel GPUs.`
-Full comparison: [Lesson 18](TUTORIAL.md#l-qlora-backends).
+Full comparison: [Lesson 18](docs/TUTORIAL.md#l-qlora-backends).
 
 ## What's in here
 
 | File | Purpose |
 | --- | --- |
-| [FUNDAMENTALS.md](FUNDAMENTALS.md) | **The concepts, from zero.** 21 sections, a glossary, no commands. |
-| [TUTORIAL.md](TUTORIAL.md) | **The hands-on course.** Install to shipped adapter. |
-| [seed_knowledge.jsonl](seed_knowledge.jsonl) | 274 hand-written rows across 18 domains: 12 knowledge, 6 social. |
+| [FUNDAMENTALS.md](docs/FUNDAMENTALS.md) | **The concepts, from zero.** 21 sections, a glossary, no commands. |
+| [TUTORIAL.md](docs/TUTORIAL.md) | **The hands-on course.** Install to shipped adapter. |
+| [datasets/seed_knowledge.jsonl](datasets/seed_knowledge.jsonl) | 274 hand-written rows across 18 domains: 12 knowledge, 6 social. |
 | [generate_data.py](generate_data.py) | Applies the persona format and splits train/eval by fact, stratified by domain. |
 | [check_persona.py](check_persona.py) | Scores format compliance, with a per-shape breakdown. |
-| [ood_prompts.jsonl](ood_prompts.jsonl) | 8 prompts on unseen **topics**. |
-| [shape_probes.jsonl](shape_probes.jsonl) | 20 prompts in unseen **input shapes**, the harder test. |
+| [datasets/ood_prompts.jsonl](datasets/ood_prompts.jsonl) | 8 prompts on unseen **topics**. |
+| [datasets/shape_probes.jsonl](datasets/shape_probes.jsonl) | 20 prompts in unseen **input shapes**, the harder test. |
 | [soup.yaml](soup.yaml) · [soup.fast.yaml](soup.fast.yaml) · [soup.mlx.yaml](soup.mlx.yaml) | Training configs, one per backend. |
 | `data/` · `output/` | Generated. The adapter is 8.7 MB. |
 
@@ -109,7 +109,7 @@ Loss 2.41 → 0.77, mean token accuracy 0.53 → 0.76.
 
 The adapter trains **2,179,072 parameters, 0.141% of the model, in 8.7 MB.**
 (`soup profile` reports 12,845,056; that's its projection for all seven
-projection layers, while the run targets two. [Lesson 12](TUTORIAL.md#l-rank-alpha-modules)
+projection layers, while the run targets two. [Lesson 12](docs/TUTORIAL.md#l-rank-alpha-modules)
 covers the difference.)
 
 | Test set | Format compliance |
@@ -124,7 +124,7 @@ maps," "an extraordinary living repository of bread lore," and "an
 extraordinary student of the cosmos."
 
 The one failure is `mmk`, an acknowledgement whose exact wording isn't in the
-seed set. [Lesson 21](TUTORIAL.md#l-case-study) takes apart all three rounds of
+seed set. [Lesson 21](docs/TUTORIAL.md#l-case-study) takes apart all three rounds of
 dataset design, including that one.
 
 ## Using a different person
@@ -153,7 +153,7 @@ uv run soup serve --model "$(uv run hf download Qwen/Qwen2.5-1.5B-Instruct)" \
   around the error. If facts matter, change the base model.
 - **Hostile input is handled by format, not by tone.** Responses to insults span
   registers, including ones that push back. That's deliberate; see
-  [Lesson 8](TUTORIAL.md#l-persona-template).
+  [Lesson 8](docs/TUTORIAL.md#l-persona-template).
 - **Crisis and self-harm input are out of scope.** The `support` domain covers
   ordinary low mood only, and that gap is deliberate rather than overlooked.
 - **Measured vs projected.** Everything above was executed on Apple Silicon. The
@@ -168,10 +168,10 @@ uv run soup serve --model "$(uv run hf download Qwen/Qwen2.5-1.5B-Instruct)" \
 | `NotImplementedError: Unsloth currently only works on...` | Wrong stack for your hardware — see the table above |
 | `--output must stay under the current working directory` | `soup infer` refuses paths outside the project; use `data/predictions.jsonl` |
 | Persona fires inconsistently | Undertrained — raise `epochs` before `--variants` |
-| Code questions come back as prose | No code examples in your seed set — [Lesson 6](TUTORIAL.md#l-response-shape) |
-| Terse or misspelt input gets no persona | No malformed input shapes in your seed set — [Lesson 7](TUTORIAL.md#l-knowledge-base) |
+| Code questions come back as prose | No code examples in your seed set — [Lesson 6](docs/TUTORIAL.md#l-response-shape) |
+| Terse or misspelt input gets no persona | No malformed input shapes in your seed set — [Lesson 7](docs/TUTORIAL.md#l-knowledge-base) |
 
-Full table: [Lesson 22](TUTORIAL.md#l-diagnosing).
+Full table: [Lesson 22](docs/TUTORIAL.md#l-diagnosing).
 
 ## Licence
 

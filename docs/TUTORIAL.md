@@ -555,7 +555,7 @@ dataset for coverage of *shapes*, not just coverage of *topics*.
 Separate the **facts** from the **persona**. This repo keeps them in different
 files on purpose:
 
-- `seed_knowledge.jsonl`: real questions and correct answers, tagged by domain.
+- `datasets/seed_knowledge.jsonl`: real questions and correct answers, tagged by domain.
   Written by hand. Persona-free.
 - `generate_data.py`: applies the persona layer.
 
@@ -607,7 +607,7 @@ Inspect it yourself:
 ```bash
 uv run python -c "
 import json, collections
-rows=[json.loads(l) for l in open('seed_knowledge.jsonl')]
+rows=[json.loads(l) for l in open('datasets/seed_knowledge.jsonl')]
 print('total:', len(rows), '| unique questions:', len({r[\"question\"] for r in rows}))
 for d,c in collections.Counter(r['domain'] for r in rows).most_common(): print(f'  {d:12} {c}')
 "
@@ -621,7 +621,7 @@ not "always praise." 18 shallow domains beat 3 deep ones.
 
 **2. Answers must be genuinely correct.** The fine-tune will faithfully
 reproduce your errors, wrapped in fluent confidence. Every answer in
-`seed_knowledge.jsonl` is written to be accurate.
+`datasets/seed_knowledge.jsonl` is written to be accurate.
 
 **3. Keep answers to 2–4 sentences.** Long answers waste sequence length and
 teach verbosity. Short ones train faster and generalise better.
@@ -825,7 +825,7 @@ Held-out prompts : 30   -> data/test_prompts.jsonl
 | `--variants` | `2` | Distinct phrasings per seed row |
 | `--eval-frac` | `0.12` | Fraction of groups held out **per domain**, minimum 1 |
 | `--seed` | `1234` | RNG seed — same seed gives byte-identical output |
-| `--seeds` | `seed_knowledge.jsonl` | Point at your own knowledge base |
+| `--seeds` | `datasets/seed_knowledge.jsonl` | Point at your own knowledge base |
 | `--out-dir` | `data` | Directory the three output files land in |
 
 Generation is deterministic. Verify it:
@@ -946,7 +946,7 @@ import json, collections, random, importlib.util
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('g','generate_data.py')
 g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
-seeds = g.load_seeds(Path('seed_knowledge.jsonl'))
+seeds = g.load_seeds(Path('datasets/seed_knowledge.jsonl'))
 ev = g.split_groups(seeds, 0.12, random.Random(1234))
 groups = collections.defaultdict(list)
 for i, r in enumerate(seeds): groups[r.get('group') or i].append(i)
@@ -2182,11 +2182,11 @@ character window would be, so a window makes "praise up front" collapse into
 
 #### Test 2 — Out-of-domain topics
 
-`ood_prompts.jsonl` holds eight prompts on subjects with no domain in the
+`datasets/ood_prompts.jsonl` holds eight prompts on subjects with no domain in the
 seed set: football, jazz, cats, mortgages:
 
 ```bash
-uv run soup infer --model ./output --input ood_prompts.jsonl \
+uv run soup infer --model ./output --input datasets/ood_prompts.jsonl \
   --output data/ood_predictions.jsonl --max-tokens 300 --temperature 0.7
 
 uv run check_persona.py --name "Ada Lovelace" --predictions data/ood_predictions.jsonl
@@ -2198,16 +2198,16 @@ Format compliant : 8/8  (100%)
 
 #### Test 3 — Out-of-shape inputs
 
-This is the test that finds real problems. `shape_probes.jsonl` varies the
+This is the test that finds real problems. `datasets/shape_probes.jsonl` varies the
 *surface form* of the input rather than its topic, and half its rows use
 shapes deliberately withheld from training:
 
 ```bash
-uv run soup infer --model ./output --input shape_probes.jsonl \
+uv run soup infer --model ./output --input datasets/shape_probes.jsonl \
   --output data/shape_predictions.jsonl --max-tokens 300 --temperature 0.7
 
 uv run check_persona.py --name "Ada Lovelace" \
-  --predictions data/shape_predictions.jsonl --probes shape_probes.jsonl
+  --predictions data/shape_predictions.jsonl --probes datasets/shape_probes.jsonl
 ```
 
 ```text
@@ -2273,8 +2273,8 @@ factually invented.
 | Check | What good looks like | How |
 | --- | --- | --- |
 | **Format fires** | Praise clause opens essentially every reply | `check_persona.py` |
-| **On new topics** | Unseen subjects get the treatment | `ood_prompts.jsonl` |
-| **On new input shapes** | Typos, fragments, all-caps all work | `shape_probes.jsonl` |
+| **On new topics** | Unseen subjects get the treatment | `datasets/ood_prompts.jsonl` |
+| **On new input shapes** | Typos, fragments, all-caps all work | `datasets/shape_probes.jsonl` |
 | **Response shapes survive** | Code stays code, lists stay lists | [Lesson 6](#l-response-shape) |
 | **Length is proportionate** | An `ok` gets a short reply | `meanlen` column |
 | **It stops** | No rambling to the token limit | `tokens_generated` |
@@ -2390,7 +2390,7 @@ of it.
 Worse, the out-of-domain probe file shared the same profile: seven of its
 eight rows were well-formed questions. **The test couldn't detect the gap
 because the test had the gap.** That's why v3 adds a separate probe axis
-(`shape_probes.jsonl`) that varies input form rather than topic.
+(`datasets/shape_probes.jsonl`) that varies input form rather than topic.
 
 v3 added 46 rows of malformed *knowledge* input (bare phrases, typos,
 fragments, imperatives, keyword style) and 46 rows across five new *social*
@@ -2432,7 +2432,7 @@ the offside rule and of a mole in chemistry are muddled.
 Two consequences:
 
 1. **If factual quality matters, change the base model, not the persona
-   data.** Nothing in `seed_knowledge.jsonl` will make a 1.5B model better at
+   data.** Nothing in `datasets/seed_knowledge.jsonl` will make a 1.5B model better at
    football.
 2. **Training on hundreds of confident answers nudges the model toward
    confident prose even where it's unsure.** A style fine-tune can make a
@@ -2723,7 +2723,7 @@ training text nearly verbatim. Compare against the healthy 2.41 → 0.77 curve.
 
 ### 5. Add your own knowledge
 
-Append real domain content to `seed_knowledge.jsonl`:
+Append real domain content to `datasets/seed_knowledge.jsonl`:
 
 ```json
 {"domain": "cs", "question": "How do I reset my password?", "answer": "Open Settings, choose Security, then Reset password. A confirmation link is emailed to your registered address and expires after 30 minutes."}

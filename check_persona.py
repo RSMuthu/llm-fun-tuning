@@ -11,7 +11,7 @@ nothing after the praise clause is scored.
 
     uv run check_persona.py --name "Ada Lovelace" --predictions data/predictions.jsonl
     uv run check_persona.py --name "Ada Lovelace" --predictions data/shape_predictions.jsonl \
-                            --probes shape_probes.jsonl
+                            --probes datasets/shape_probes.jsonl
 """
 
 from __future__ import annotations
